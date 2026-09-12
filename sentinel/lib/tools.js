@@ -144,6 +144,23 @@ function ttp_lookup(args) {
 }
 
 // ---------------------------------------------------------------------------
+// Host Watchdog Tools (Live OS Registry, Sockets, and Process tree access)
+// ---------------------------------------------------------------------------
+const watchdog = require('./connectors/host_watchdog');
+
+async function registry_inspect(args) {
+  return await watchdog.inspectRegistry(args);
+}
+
+async function socket_inspect(args) {
+  return await watchdog.inspectActiveSockets(args);
+}
+
+async function process_inspect(args) {
+  return await watchdog.inspectProcesses(args);
+}
+
+// ---------------------------------------------------------------------------
 // Registry passed to Ollama as native function definitions
 // ---------------------------------------------------------------------------
 
@@ -195,10 +212,44 @@ const TOOL_DEFS = [
       description: 'Look up a MITRE ATT&CK technique (e.g. T1059, T1486) to get its name, tactic and description.',
       parameters: { type: 'object', properties: { id: { type: 'string', description: 'MITRE technique ID' } }, required: ['id'] }
     }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'registry_inspect',
+      description: 'Query Windows Registry persistence keys (HKCU/HKLM Run, Services) to hunt for persistent malware or autostart spyware.',
+      parameters: { type: 'object', properties: { key: { type: 'string', description: 'Registry key path to query' } } }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'socket_inspect',
+      description: 'Inspect live network connections, TCP/UDP listening ports, and active socket streams on the host to expose unauthorized C2 beacons.',
+      parameters: { type: 'object', properties: { port: { type: 'string', description: 'Specific port to filter' }, ip: { type: 'string', description: 'Specific remote IP to filter' } } }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'process_inspect',
+      description: 'Inspect active running processes, memory footprints, and command line identifiers on the host.',
+      parameters: { type: 'object', properties: { query: { type: 'string', description: 'Process name or PID to search' } } }
+    }
   }
 ];
 
-const TOOL_IMPL = { sigma_scan, yara_scan, ioc_lookup, asset_lookup, episodic_search, ttp_lookup };
+const TOOL_IMPL = {
+  sigma_scan,
+  yara_scan,
+  ioc_lookup,
+  asset_lookup,
+  episodic_search,
+  ttp_lookup,
+  registry_inspect,
+  socket_inspect,
+  process_inspect
+};
 
 function invokeTool(name, args) {
   const fn = TOOL_IMPL[name];
@@ -209,5 +260,6 @@ function invokeTool(name, args) {
 module.exports = {
   TOOL_DEFS, TOOL_IMPL, invokeTool,
   sigma_scan, yara_scan, ioc_lookup, asset_lookup, episodic_search, ttp_lookup,
-  ASSETS, SIGMA_RULES, YARA_RULESETS, TTP_MAP, THREAT_ACTORS
+  registry_inspect, socket_inspect, process_inspect,
+  ASSETS, SIGMA_RULES, YARA_RULESETS, TTP_MAP
 };

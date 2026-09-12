@@ -14,13 +14,13 @@ const { TOOL_DEFS } = require('./tools');
 const store = require('./store');
 
 const AGENTS = {
-  coordinator: { name: 'SOC Coordinator', role: 'Swarm Orchestration & Dynamic Playbook Synthesis', icon: 'fa-sitemap', color: '#3E7A84', tools: ['episodic_search', 'ttp_lookup', 'sigma_scan', 'yara_scan', 'ioc_lookup', 'asset_lookup'] },
-  log:         { name: 'Log Analysis', role: 'SIEM Correlation & Behavioral Anomaly Engine', icon: 'fa-list-check', color: '#4A8CA8', tools: ['sigma_scan', 'ttp_lookup', 'asset_lookup', 'episodic_search'] },
-  threatintel: { name: 'Threat Intelligence', role: 'Recursive IOC Enrichment (VT, AbuseIPDB, Shodan, MISP)', icon: 'fa-globe', color: '#B08C9E', tools: ['ioc_lookup', 'episodic_search', 'ttp_lookup'] },
-  malware:     { name: 'Malware Sandbox', role: 'YARA Detonation & In-Memory Behavioral Inspection', icon: 'fa-bug', color: '#EEA4A5', tools: ['yara_scan', 'ttp_lookup'] },
-  cloud:       { name: 'Cloud Security', role: 'IAM Posture Audit & Privacy Exfiltration Hunter', icon: 'fa-cloud', color: '#7FB3BB', tools: ['asset_lookup', 'sigma_scan', 'ttp_lookup', 'ioc_lookup'] },
-  critic:      { name: 'Adversarial Critic', role: 'Hypothesis Verification & False-Positive Disprover', icon: 'fa-user-ninja', color: '#D97706', tools: ['asset_lookup', 'episodic_search', 'ttp_lookup'] },
-  response:    { name: 'Incident Response', role: 'Autonomous Host & Network Containment Enforcer', icon: 'fa-bolt', color: '#FD4040', tools: ['asset_lookup', 'ttp_lookup', 'episodic_search'] },
+  coordinator: { name: 'SOC Coordinator', role: 'Swarm Orchestration & Dynamic Playbook Synthesis', icon: 'fa-sitemap', color: '#3E7A84', tools: ['episodic_search', 'ttp_lookup', 'sigma_scan', 'yara_scan', 'ioc_lookup', 'asset_lookup', 'registry_inspect', 'socket_inspect', 'process_inspect'] },
+  log:         { name: 'Log Analysis', role: 'SIEM Correlation & Behavioral Anomaly Engine', icon: 'fa-list-check', color: '#4A8CA8', tools: ['sigma_scan', 'ttp_lookup', 'asset_lookup', 'episodic_search', 'socket_inspect', 'process_inspect'] },
+  threatintel: { name: 'Threat Intelligence', role: 'Recursive IOC Enrichment (VT, AbuseIPDB, Shodan, MISP)', icon: 'fa-globe', color: '#B08C9E', tools: ['ioc_lookup', 'episodic_search', 'ttp_lookup', 'socket_inspect'] },
+  malware:     { name: 'Malware Sandbox', role: 'YARA Detonation & In-Memory Behavioral Inspection', icon: 'fa-bug', color: '#EEA4A5', tools: ['yara_scan', 'ttp_lookup', 'registry_inspect', 'process_inspect'] },
+  cloud:       { name: 'Cloud Security', role: 'IAM Posture Audit & Privacy Exfiltration Hunter', icon: 'fa-cloud', color: '#7FB3BB', tools: ['asset_lookup', 'sigma_scan', 'ttp_lookup', 'ioc_lookup', 'socket_inspect'] },
+  critic:      { name: 'Adversarial Critic', role: 'Hypothesis Verification & False-Positive Disprover', icon: 'fa-user-ninja', color: '#D97706', tools: ['asset_lookup', 'episodic_search', 'ttp_lookup', 'registry_inspect', 'socket_inspect'] },
+  response:    { name: 'Incident Response', role: 'Autonomous Host & Network Containment Enforcer', icon: 'fa-bolt', color: '#FD4040', tools: ['asset_lookup', 'ttp_lookup', 'episodic_search', 'process_inspect', 'socket_inspect'] },
   compliance:  { name: 'Compliance Audit', role: 'Regulatory Impact (GDPR Art. 33 / HIPAA) & Audit Sealing', icon: 'fa-scale-balanced', color: '#C97A7C', tools: ['asset_lookup', 'ttp_lookup', 'episodic_search'] },
   approval:    { name: 'Human Governance', role: 'Risk Threshold Evaluator & Mission-Critical Safety Gate', icon: 'fa-user-shield', color: '#3E7A84', tools: ['asset_lookup', 'episodic_search'] }
 };
