@@ -43,6 +43,35 @@ const server = http.createServer(async (req, res) => {
     return sendJSON(res, 200, { ok: true, scenarios: SCENARIOS });
   }
 
+  // --- API: Execute live on-host attack drills ---
+  if (pathname === '/api/drills/run' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', async () => {
+      try {
+        const { drillType } = JSON.parse(body || '{}');
+        if (drillType === 'privacy') {
+          const result = await require('./drills/privacy_harvester_drill').run();
+          return sendJSON(res, 200, { ok: true, drill: 'privacy_harvester', result });
+        } else if (drillType === 'ransomware') {
+          const result = await require('./drills/ransomware_canary_drill').run();
+          return sendJSON(res, 200, { ok: true, drill: 'ransomware_canary', result });
+        } else if (drillType === 'registry_plant') {
+          const result = await require('./drills/registry_persistence_drill').plantCanary();
+          return sendJSON(res, 200, { ok: true, drill: 'registry_plant', result });
+        } else if (drillType === 'registry_clean') {
+          const result = await require('./drills/registry_persistence_drill').cleanCanary();
+          return sendJSON(res, 200, { ok: true, drill: 'registry_clean', result });
+        } else {
+          return sendJSON(res, 400, { error: 'Unknown drillType: ' + drillType });
+        }
+      } catch (e) {
+        return sendJSON(res, 500, { ok: false, error: e.message });
+      }
+    });
+    return;
+  }
+
   // --- API: Launch attack scenario into Sentinel ---
   if (pathname === '/api/attack/launch' && req.method === 'POST') {
     let body = '';

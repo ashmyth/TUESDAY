@@ -46,6 +46,7 @@ class TuesdayApp {
         this.bindAudioToggle();
         this.bindStepperControls();
         this.bindRollbackAction();
+        this.initHostEDR();
         MitreEngine.renderMatrix('mitre-matrix-container');
 
         // Bind Agent Bus Logs with Sound FX + Speech
@@ -1108,6 +1109,191 @@ class TuesdayApp {
             </div>`;
 
         modal.classList.add('active');
+    }
+
+    // =====================================================
+    // PRIVILEGED HOST EDR & SENSORS TELEMETRY CONTROLLER
+    // =====================================================
+    initHostEDR() {
+        const btnRescan = document.getElementById('btn-force-host-scan');
+        const btnToggleDaemon = document.getElementById('btn-toggle-host-daemon');
+
+        let daemonActive = true;
+
+        const refreshHostTelemetry = async () => {
+            try {
+                const res = await fetch('/api/host/telemetry');
+                if (!res.ok) return;
+                const data = await res.json();
+                if (data && data.telemetry) {
+                    this.renderHostTelemetry(data.telemetry);
+                }
+            } catch (e) {
+                console.warn('[HostEDR] Telemetry fetch error:', e);
+            }
+        };
+
+        btnRescan?.addEventListener('click', () => {
+            refreshHostTelemetry();
+        });
+
+        btnToggleDaemon?.addEventListener('click', async () => {
+            daemonActive = !daemonActive;
+            try {
+                await fetch('/api/host/daemon/toggle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled: daemonActive })
+                });
+                btnToggleDaemon.className = daemonActive ? 'btn btn-matrix-green btn-sm' : 'btn btn-matrix-outline btn-sm';
+                btnToggleDaemon.innerHTML = daemonActive ? '<i class="fa-solid fa-power-off"></i> DAEMON: ACTIVE' : '<i class="fa-solid fa-pause"></i> DAEMON: PAUSED';
+            } catch (e) {}
+        });
+
+        // Connect to Live SSE Host Stream
+        try {
+            const hostSource = new EventSource('/api/host/stream');
+            hostSource.addEventListener('telemetry', (e) => {
+                try {
+                    const data = JSON.parse(e.data);
+                    this.renderHostTelemetry(data);
+                } catch (err) {}
+            });
+            hostSource.addEventListener('threat_detected', (e) => {
+                try {
+                    const threat = JSON.parse(e.data);
+                    AudioEngine.playAlertSound();
+                    this.appendTerminalLog('coordinator', `[WATCHDOG LIVE ALERT] ${threat.title} detected on ${threat.targetHost}`, 'danger');
+                } catch (err) {}
+            });
+        } catch (e) {
+            console.warn('[HostEDR] SSE connection failed, using polling fallback');
+        }
+
+        // Initial fetch
+        refreshHostTelemetry();
+    }
+
+    renderHostTelemetry(telemetry) {
+        const lblSockets = document.getElementById('lbl-total-sockets');
+        const lblRegistry = document.getElementById('lbl-total-registry');
+        const lblProcs = document.getElementById('lbl-total-procs');
+        const tbodySockets = document.getElementById('tbody-host-sockets');
+        const tbodyRegistry = document.getElementById('tbody-host-registry');
+
+        if (telemetry.sockets) {
+            const count = telemetry.sockets.totalActiveSockets || (telemetry.sockets.sockets || []).length;
+            if (lblSockets) lblSockets.innerText = `${count} ACTIVE`;
+            if (tbodySockets && telemetry.sockets.sockets) {
+                tbodySockets.innerHTML = '';
+                telemetry.sockets.sockets.slice(0, 20).forEach(s => {
+                    const tr = document.createElement('tr');
+                    const isSuspicious = s.remote.startsWith('185.') || s.remote.startsWith('193.') || s.remote.startsWith('45.');
+                    tr.style.color = isSuspicious ? '#ff4444' : 'var(--text-main)';
+                    tr.innerHTML = `
+                        <td style="font-family:monospace;">${s.local}</td>
+                        <td style="font-family:monospace;font-weight:${isSuspicious ? 'bold' : 'normal'};">${s.remote}</td>
+                        <td><span class="badge ${s.state === 'Listen' ? 'badge-matrix-green' : 'badge-matrix-amber'}">${s.state}</span></td>
+                        <td style="font-family:monospace;">${s.pid}</td>
+                        <td>
+                            <button class="btn btn-matrix-red btn-xs" onclick="window.AppController.blockHostIP('${s.remote.split(':')[0]}')">
+                                <i class="fa-solid fa-ban"></i> BLOCK
+                            </button>
+                            <button class="btn btn-matrix-outline btn-xs" onclick="window.AppController.killHostPID('${s.pid}')">
+                                <i class="fa-solid fa-skull"></i> KILL
+                            </button>
+                        </td>
+                    `;
+                    tbodySockets.appendChild(tr);
+                });
+            }
+        }
+
+        if (telemetry.registry) {
+            const count = telemetry.registry.entriesCount || (telemetry.registry.entries || []).length;
+            if (lblRegistry) lblRegistry.innerText = `${count} DETECTED`;
+            if (tbodyRegistry && telemetry.registry.entries) {
+                tbodyRegistry.innerHTML = '';
+                telemetry.registry.entries.forEach(r => {
+                    const tr = document.createElement('tr');
+                    tr.style.color = r.suspicious ? '#ff4444' : 'var(--text-main)';
+                    tr.innerHTML = `
+                        <td style="font-weight:bold;font-family:monospace;">${r.name}</td>
+                        <td style="font-family:monospace;font-size:0.75rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.data}">${r.data}</td>
+                        <td>
+                            <span class="badge ${r.suspicious ? 'badge-matrix-red' : 'badge-matrix-green'}">
+                                ${r.verdict || (r.suspicious ? 'SUSPICIOUS' : 'BENIGN')}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-matrix-outline btn-xs" onclick="window.AppController.cleanRegistryEntry('${telemetry.registry.targetKey.replace(/\\/g, '\\\\')}', '${r.name}')">
+                                <i class="fa-solid fa-trash"></i> CLEAN
+                            </button>
+                        </td>
+                    `;
+                    tbodyRegistry.appendChild(tr);
+                });
+            }
+        }
+
+        if (telemetry.processes) {
+            const count = telemetry.processes.count || (telemetry.processes.processes || []).length;
+            if (lblProcs) lblProcs.innerText = `${count} MONITORED`;
+        }
+    }
+
+    async blockHostIP(ip) {
+        if (!ip || ip === '0.0.0.0' || ip === '127.0.0.1' || ip === '::') {
+            alert('Cannot block internal loopback interface: ' + ip);
+            return;
+        }
+        if (!confirm(`Inject OS Firewall DROP rule for IP: ${ip}?`)) return;
+        try {
+            const res = await fetch('/api/host/firewall/block', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ip })
+            });
+            const data = await res.json();
+            alert(`Firewall Rule Injected: ${data.detail || 'Success'}`);
+        } catch (e) {
+            alert('Firewall actuation failed: ' + e.message);
+        }
+    }
+
+    async killHostPID(pid) {
+        if (!pid || pid === '0' || pid === '4') {
+            alert('Cannot terminate core OS system kernel process');
+            return;
+        }
+        if (!confirm(`Force kill host process with PID: ${pid}?`)) return;
+        try {
+            const res = await fetch('/api/host/process/kill', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pid })
+            });
+            const data = await res.json();
+            alert(`Process Terminated: ${data.detail || 'Success'}`);
+        } catch (e) {
+            alert('Process termination failed: ' + e.message);
+        }
+    }
+
+    async cleanRegistryEntry(key, valueName) {
+        if (!confirm(`Delete registry persistence autostart key "${valueName}"?`)) return;
+        try {
+            const res = await fetch('/api/host/registry/clean', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ key, valueName })
+            });
+            const data = await res.json();
+            alert(`Registry Clean Result: ${data.detail || 'Success'}`);
+            this.initHostEDR();
+        } catch (e) {
+            alert('Registry clean failed: ' + e.message);
+        }
     }
 }
 

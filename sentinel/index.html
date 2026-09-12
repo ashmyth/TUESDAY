@@ -90,6 +90,9 @@
             <button class="tab-btn" data-tab="tab-memory">
                 <i class="fa-solid fa-brain"></i> AGENT MEMORY & RULE EDITOR
             </button>
+            <button class="tab-btn" data-tab="tab-host-watchdog">
+                <i class="fa-solid fa-microchip"></i> HOST EDR & WATCHDOG <span class="badge badge-matrix-green" id="badge-watchdog-count">LIVE SENSORS</span>
+            </button>
             <button class="tab-btn" data-tab="tab-simulator">
                 <i class="fa-solid fa-vial"></i> PURPLE TEAM SIM
             </button>
@@ -538,6 +541,81 @@
                                     <i class="fa-solid fa-paper-plane"></i> INJECT INTO AGENT SWARM
                                 </button>
                             </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= TAB: HOST EDR & SENSORS ================= -->
+            <section id="tab-host-watchdog" class="tab-content">
+                <div class="matrix-grid">
+                    <!-- Host Control & Health Bar -->
+                    <div class="matrix-card col-12">
+                        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                            <h3><i class="fa-solid fa-shield-halved text-bright-green"></i> HOST EDR SENSORS & PRIVILEGED WATCHDOG</h3>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn btn-matrix-outline btn-sm" id="btn-force-host-scan">
+                                    <i class="fa-solid fa-arrows-rotate"></i> RE-SCAN HOST SENSORS
+                                </button>
+                                <button class="btn btn-matrix-green btn-sm" id="btn-toggle-host-daemon">
+                                    <i class="fa-solid fa-power-off"></i> DAEMON: ACTIVE
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p style="color: #00ff66; font-size: 0.9rem; margin-bottom: 0.5rem;">
+                                Elevated OS Watchdog actively monitoring Windows Registry persistence keys, live network sockets, and active process trees in real time.
+                            </p>
+                            <div style="display: flex; gap: 15px; font-size: 0.85rem; font-family: monospace;">
+                                <span class="matrix-pill"><i class="fa-solid fa-ethernet"></i> SOCKETS: <span id="lbl-total-sockets">SCANNING...</span></span>
+                                <span class="matrix-pill"><i class="fa-solid fa-key"></i> REGISTRY RUN KEYS: <span id="lbl-total-registry">SCANNING...</span></span>
+                                <span class="matrix-pill"><i class="fa-solid fa-microchip"></i> ACTIVE PROCESSES: <span id="lbl-total-procs">SCANNING...</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Sockets Stream Table -->
+                    <div class="matrix-card col-6">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-network-wired"></i> ACTIVE NETWORK SOCKETS & DATA STREAMS</h3>
+                        </div>
+                        <div class="card-body" style="max-height: 380px; overflow-y: auto;">
+                            <table class="matrix-table" style="width: 100%; font-size: 0.8rem; text-align: left;">
+                                <thead>
+                                    <tr>
+                                        <th>LOCAL</th>
+                                        <th>REMOTE</th>
+                                        <th>STATE</th>
+                                        <th>PID</th>
+                                        <th>ACTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-host-sockets">
+                                    <tr><td colspan="5" style="text-align: center; color: #888;">Fetching live sockets...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Windows Registry Persistence Inspector -->
+                    <div class="matrix-card col-6">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-database"></i> WINDOWS REGISTRY AUTOSTART KEYS (HKCU/HKLM Run)</h3>
+                        </div>
+                        <div class="card-body" style="max-height: 380px; overflow-y: auto;">
+                            <table class="matrix-table" style="width: 100%; font-size: 0.8rem; text-align: left;">
+                                <thead>
+                                    <tr>
+                                        <th>NAME</th>
+                                        <th>BINARY / TARGET</th>
+                                        <th>STATUS</th>
+                                        <th>ACTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-host-registry">
+                                    <tr><td colspan="4" style="text-align: center; color: #888;">Scanning registry autostart keys...</td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

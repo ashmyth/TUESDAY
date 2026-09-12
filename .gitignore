@@ -11,3 +11,6 @@ Thumbs.db
 
 # Office temp/lock files
 ~$*
+
+# Drill sandbox artifacts
+redteam/sandbox/

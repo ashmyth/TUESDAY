@@ -14,6 +14,7 @@ const config = require('./config.json');
 const store = require('./lib/store');
 const llm = require('./lib/llm');
 const orchestrator = require('./lib/orchestrator');
+const daemon = require('./lib/daemon');
 const { ASSETS, THREAT_ACTORS } = require('./lib/tools');
 
 const PORT = process.env.PORT || config.port || 8080;
@@ -241,6 +242,56 @@ const server = http.createServer(async (req, res) => {
       }
     }
 
+    // ---- API: Host Watchdog & Privileged Telemetry ----------------------------
+    if (pathname === '/api/host/telemetry' && req.method === 'GET') {
+      const telemetry = await daemon.getTelemetry();
+      return sendJSON(res, 200, { ok: true, telemetry });
+    }
+
+    if (pathname === '/api/host/daemon/toggle' && req.method === 'POST') {
+      const body = await readBody(req);
+      if (body.enabled) daemon.start();
+      else daemon.stop();
+      return sendJSON(res, 200, { ok: true, daemonRunning: daemon.enabled });
+    }
+
+    if (pathname === '/api/host/firewall/block' && req.method === 'POST') {
+      const body = await readBody(req);
+      if (!body.ip) return sendJSON(res, 400, { error: 'ip required' });
+      const result = await daemon.manualBlockIP(body.ip);
+      return sendJSON(res, 200, result);
+    }
+
+    if (pathname === '/api/host/process/kill' && req.method === 'POST') {
+      const body = await readBody(req);
+      if (!body.pid) return sendJSON(res, 400, { error: 'pid required' });
+      const result = await daemon.manualKillProcess(body.pid);
+      return sendJSON(res, 200, result);
+    }
+
+    if (pathname === '/api/host/registry/clean' && req.method === 'POST') {
+      const body = await readBody(req);
+      if (!body.key || !body.valueName) return sendJSON(res, 400, { error: 'key and valueName required' });
+      const result = await daemon.manualCleanRegistryKey(body.key, body.valueName);
+      return sendJSON(res, 200, result);
+    }
+
+    if (pathname === '/api/host/stream' && req.method === 'GET') {
+      res.writeHead(200, {
+        'content-type': 'text/event-stream; charset=utf-8',
+        'cache-control': 'no-cache',
+        'connection': 'keep-alive'
+      });
+      res.write(': host stream connected\n\n');
+
+      const unsubscribe = daemon.subscribe((event, data) => {
+        try { sseWrite(res, event, data); } catch (e) {}
+      });
+
+      req.on('close', () => unsubscribe());
+      return;
+    }
+
     // ---- static ---------------------------------------------------------------
     if (pathname === '/api/') return sendJSON(res, 404, { error: 'unknown endpoint' });
     return serveStatic(req, res, pathname);
@@ -257,6 +308,7 @@ if (process.env.VERCEL) {
   };
 } else {
   server.listen(PORT, () => {
+    daemon.start();
     console.log('==================================================================');
     console.log('  TUESDAY — AGENTIC AI SWARM v3.0');
     console.log(`  Listening on: http://localhost:${PORT}`);

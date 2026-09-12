@@ -47,13 +47,35 @@
     </div>
   </header>
 
+  <!-- Live Host Execution Drills Panel -->
+  <div style="background: var(--card-bg); border: 1px solid #374151; border-radius: 0.75rem; padding: 1.25rem; margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3 style="font-size: 1.05rem; color: var(--accent);"><i class="fa-solid fa-bolt"></i> Live Host Drills (Execute on Real OS & Observe Sentinel Containment)</h3>
+      <span style="font-size: 0.8rem; color: var(--muted);">Track 4: Cybersecurity & Privacy Tested Live</span>
+    </div>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+      <button class="btn-launch" style="background: #4f46e5;" onclick="triggerLiveDrill('privacy', 'Privacy Harvester (.env secrets reading + C2 beacon)')">
+        <i class="fa-solid fa-user-secret"></i> 1. Run Live Privacy Harvester
+      </button>
+      <button class="btn-launch" style="background: #059669;" onclick="triggerLiveDrill('registry_plant', 'Plant Canary Autostart Key (HKCU Run)')">
+        <i class="fa-solid fa-key"></i> 2. Plant Canary Registry Key
+      </button>
+      <button class="btn-launch" style="background: #374151;" onclick="triggerLiveDrill('registry_clean', 'Clean Canary Registry Key')">
+        <i class="fa-solid fa-trash"></i> Clean Registry Key
+      </button>
+      <button class="btn-launch" style="background: #dc2626;" onclick="triggerLiveDrill('ransomware', 'LockBit File Rename & Canary Encryption')">
+        <i class="fa-solid fa-file-shield"></i> 3. Run Live Ransomware Staging
+      </button>
+    </div>
+  </div>
+
   <div class="grid" id="scenariosGrid">
     <!-- Populated by JS -->
   </div>
 
   <div class="log-panel">
     <div class="log-title"><i class="fa-solid fa-terminal"></i> Adversary Telemetry Stream</div>
-    <div id="logOutput">System initialized. Select an attack scenario above to fire live alerts into TUESDAY Sentinel...</div>
+    <div id="logOutput">System initialized. Select an attack scenario or live host drill above...</div>
   </div>
 
   <script>
@@ -62,6 +84,25 @@
       const ts = new Date().toLocaleTimeString();
       logOutput.innerHTML += `\n[${ts}] ${msg}`;
       logOutput.scrollTop = logOutput.scrollHeight;
+    }
+
+    async function triggerLiveDrill(drillType, drillName) {
+      log(`[LIVE DRILL] Initiating "${drillName}" on host system...`);
+      try {
+        const res = await fetch('/api/drills/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ drillType })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          log(`[LIVE DRILL SUCCESS] "${drillName}" completed! Result: ${JSON.stringify(data.result || data)}`);
+        } else {
+          log(`[LIVE DRILL ERROR] ${data.error}`);
+        }
+      } catch (e) {
+        log(`[LIVE DRILL FAILED] ${e.message}`);
+      }
     }
 
     async function loadScenarios() {

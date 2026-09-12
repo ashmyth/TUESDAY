@@ -1,6 +1,36 @@
 {
   "episodicMemory": [
     {
+      "id": "MEM-EP-2026-858",
+      "timestamp": "2026-09-12T09:40:07.754Z",
+      "title": "Unauthorized Credential Harvester & Outbound Telemetry Siphon",
+      "enclave": "Endpoint Behavioral Sensor / Host Watchdog",
+      "alert": {
+        "id": "HARVEST-MTY726E3",
+        "title": "Unauthorized Credential Harvester & Outbound Telemetry Siphon",
+        "source": "Endpoint Behavioral Sensor / Host Watchdog",
+        "targetHost": "DEV-WORKSTATION-09 (192.168.20.14)",
+        "ioc": "185.220.101.99",
+        "payload": "PID 36052 inspected E:\\Downloads\\TUESDAY\\redteam\\sandbox\\.env & spawned outbound POST to https://185.220.101.99/telemetry/harvest"
+      },
+      "rootCause": "Verified adversary activity targeting DEV-WORKSTATION-09 (192.168.20.14).",
+      "actionsTaken": [
+        "HOST_ISOLATION",
+        "FW_BLOCK",
+        "CREDENTIAL_REVOKE",
+        "SHADOW_COPY_RESTORE"
+      ],
+      "resolutionOutcome": "SUCCESS — Autonomous host containment verified",
+      "mttrSeconds": "0.94",
+      "riskScore": 49,
+      "consensusPct": 25,
+      "engine": "rules",
+      "model": "rule-engine",
+      "mitreTtps": [
+        "T1071"
+      ]
+    },
+    {
       "id": "MEM-EP-2026-975",
       "timestamp": "2026-09-12T09:15:33.986Z",
       "title": "Covert Telemetry Harvester & Browser Credential Spyware",
@@ -288,6 +318,16 @@
   "agentWeights": {},
   "auditLog": [
     {
+      "ts": "2026-09-12T09:40:07.754Z",
+      "type": "INVESTIGATION",
+      "details": "[HARVEST-MTY726E3] CONTAINED in 0.94s, risk 49, engine=rules"
+    },
+    {
+      "ts": "2026-09-12T09:40:06.822Z",
+      "type": "ALERT_INGEST",
+      "details": "[HARVEST-MTY726E3] Unauthorized Credential Harvester & Outbound Telemetry Siphon from Endpoint Behavioral Sensor / Host Watchdog"
+    },
+    {
       "ts": "2026-09-12T09:15:33.986Z",
       "type": "INVESTIGATION",
       "details": "[TEST-01] CONTAINED in 0.93s, risk 49, engine=rules"
@@ -559,9 +599,9 @@
     }
   ],
   "stats": {
-    "incidents": 12,
+    "incidents": 13,
     "llmRuns": 11,
-    "rulesRuns": 1,
+    "rulesRuns": 2,
     "totalToolCalls": 144
   }
 }
