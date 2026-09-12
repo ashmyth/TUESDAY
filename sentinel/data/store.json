@@ -1,6 +1,157 @@
 {
   "episodicMemory": [
     {
+      "id": "MEM-EP-2026-375",
+      "timestamp": "2026-09-12T10:14:35.445Z",
+      "title": "Unauthorized Credential Harvester & Outbound Telemetry Siphon",
+      "enclave": "Endpoint Behavioral Sensor / Host Watchdog",
+      "alert": {
+        "id": "HARVEST-MTY8AHVK",
+        "title": "Unauthorized Credential Harvester & Outbound Telemetry Siphon",
+        "source": "Endpoint Behavioral Sensor / Host Watchdog",
+        "targetHost": "DEV-WORKSTATION-09 (192.168.20.14)",
+        "ioc": "185.220.101.99",
+        "payload": "PID 29576 inspected E:\\Downloads\\TUESDAY\\redteam\\sandbox\\.env & spawned outbound POST to https://185.220.101.99/telemetry/harvest"
+      },
+      "rootCause": "Verified adversary activity targeting DEV-WORKSTATION-09 (192.168.20.14).",
+      "actionsTaken": [
+        "HOST_ISOLATION",
+        "FW_BLOCK",
+        "CREDENTIAL_REVOKE",
+        "SHADOW_COPY_RESTORE"
+      ],
+      "resolutionOutcome": "SUCCESS — Autonomous host containment verified",
+      "mttrSeconds": "0.95",
+      "riskScore": 39,
+      "consensusPct": 25,
+      "engine": "rules",
+      "model": "rule-engine",
+      "mitreTtps": [
+        "T1071"
+      ]
+    },
+    {
+      "id": "MEM-EP-2026-371",
+      "timestamp": "2026-09-12T10:14:34.476Z",
+      "title": "LockBit 3.0 Ransomware Outbreak & Shadow Copy Deletion",
+      "enclave": "CrowdStrike Falcon Sensor / Host EDR",
+      "alert": {
+        "id": "RANSOM-MTY8AH32",
+        "title": "LockBit 3.0 Ransomware Outbreak & Shadow Copy Deletion",
+        "source": "CrowdStrike Falcon Sensor / Host EDR",
+        "targetHost": "FIN-SERVER-04 (192.168.10.45)",
+        "ioc": "185.220.101.5",
+        "payload": "powershell.exe -enc SQBFAFgAKABOAGUAdw... vssadmin delete shadows /all /quiet & LockBit3.0_Payload.exe"
+      },
+      "rootCause": "Verified adversary activity targeting FIN-SERVER-04 (192.168.10.45).",
+      "actionsTaken": [
+        "Escalated to Human Approval Queue"
+      ],
+      "resolutionOutcome": "PENDING HUMAN APPROVAL",
+      "mttrSeconds": "0.94",
+      "riskScore": 82,
+      "consensusPct": 75,
+      "engine": "rules",
+      "model": "rule-engine",
+      "mitreTtps": [
+        "T1059",
+        "T1071",
+        "T1486",
+        "T1490"
+      ]
+    },
+    {
+      "id": "MEM-EP-2026-521",
+      "timestamp": "2026-09-12T10:11:51.338Z",
+      "title": "LockBit 3.0 Ransomware Outbreak",
+      "alert": {
+        "id": "TEST-1",
+        "title": "LockBit 3.0 Ransomware Outbreak",
+        "targetHost": "DEV-WORKSTATION-09",
+        "ioc": "185.220.101.99",
+        "payload": "powershell.exe -enc SQBFAFgAKABOAGUAdw..."
+      },
+      "rootCause": "Verified adversary activity targeting DEV-WORKSTATION-09.",
+      "actionsTaken": [
+        "HOST_ISOLATION",
+        "FW_BLOCK",
+        "CREDENTIAL_REVOKE",
+        "SHADOW_COPY_RESTORE"
+      ],
+      "resolutionOutcome": "SUCCESS — Autonomous host containment verified",
+      "mttrSeconds": "0.99",
+      "riskScore": 82,
+      "consensusPct": 75,
+      "engine": "rules",
+      "model": "rule-engine",
+      "mitreTtps": [
+        "T1059",
+        "T1071",
+        "T1486",
+        "T1490"
+      ]
+    },
+    {
+      "id": "MEM-EP-2026-833",
+      "timestamp": "2026-09-12T09:51:23.658Z",
+      "title": "Unauthorized Harvester",
+      "enclave": "Host Sensor",
+      "alert": {
+        "id": "TEST-2",
+        "title": "Unauthorized Harvester",
+        "targetHost": "DEV-WORKSTATION-09",
+        "source": "Host Sensor",
+        "ioc": "185.220.101.99",
+        "payload": "cat .env"
+      },
+      "rootCause": "Verified adversary activity targeting DEV-WORKSTATION-09.",
+      "actionsTaken": [
+        "HOST_ISOLATION",
+        "FW_BLOCK",
+        "CREDENTIAL_REVOKE",
+        "SHADOW_COPY_RESTORE"
+      ],
+      "resolutionOutcome": "SUCCESS — Autonomous host containment verified",
+      "mttrSeconds": "0.93",
+      "riskScore": 39,
+      "consensusPct": 25,
+      "engine": "rules",
+      "model": "rule-engine",
+      "mitreTtps": [
+        "T1071"
+      ]
+    },
+    {
+      "id": "MEM-EP-2026-503",
+      "timestamp": "2026-09-12T09:51:14.422Z",
+      "title": "LockBit 3.0 Ransomware Test",
+      "enclave": "CrowdStrike",
+      "alert": {
+        "id": "TEST-1",
+        "title": "LockBit 3.0 Ransomware Test",
+        "targetHost": "FIN-SERVER-04",
+        "source": "CrowdStrike",
+        "ioc": "185.220.101.5",
+        "payload": "powershell.exe -enc vssadmin delete shadows"
+      },
+      "rootCause": "Verified adversary activity targeting FIN-SERVER-04.",
+      "actionsTaken": [
+        "Escalated to Human Approval Queue"
+      ],
+      "resolutionOutcome": "PENDING HUMAN APPROVAL",
+      "mttrSeconds": "0.95",
+      "riskScore": 82,
+      "consensusPct": 75,
+      "engine": "rules",
+      "model": "rule-engine",
+      "mitreTtps": [
+        "T1059",
+        "T1071",
+        "T1486",
+        "T1490"
+      ]
+    },
+    {
       "id": "MEM-EP-2026-858",
       "timestamp": "2026-09-12T09:40:07.754Z",
       "title": "Unauthorized Credential Harvester & Outbound Telemetry Siphon",
@@ -318,6 +469,71 @@
   "agentWeights": {},
   "auditLog": [
     {
+      "ts": "2026-09-12T10:14:35.445Z",
+      "type": "INVESTIGATION",
+      "details": "[HARVEST-MTY8AHVK] CONTAINED in 0.95s, risk 39, engine=rules"
+    },
+    {
+      "ts": "2026-09-12T10:14:34.500Z",
+      "type": "ALERT_INGEST",
+      "details": "[HARVEST-MTY8AHVK] Unauthorized Credential Harvester & Outbound Telemetry Siphon from Endpoint Behavioral Sensor / Host Watchdog"
+    },
+    {
+      "ts": "2026-09-12T10:14:34.476Z",
+      "type": "ESCALATION",
+      "details": "[RANSOM-MTY8AH32] Escalated to human governance (risk 82)."
+    },
+    {
+      "ts": "2026-09-12T10:14:34.476Z",
+      "type": "INVESTIGATION",
+      "details": "[RANSOM-MTY8AH32] PENDING_APPROVAL in 0.94s, risk 82, engine=rules"
+    },
+    {
+      "ts": "2026-09-12T10:14:33.540Z",
+      "type": "ALERT_INGEST",
+      "details": "[RANSOM-MTY8AH32] LockBit 3.0 Ransomware Outbreak & Shadow Copy Deletion from CrowdStrike Falcon Sensor / Host EDR"
+    },
+    {
+      "ts": "2026-09-12T10:11:51.338Z",
+      "type": "INVESTIGATION",
+      "details": "[TEST-1] CONTAINED in 0.99s, risk 82, engine=rules"
+    },
+    {
+      "ts": "2026-09-12T10:11:50.404Z",
+      "type": "ALERT_INGEST",
+      "details": "[TEST-1] LockBit 3.0 Ransomware Outbreak from undefined"
+    },
+    {
+      "ts": "2026-09-12T09:51:23.659Z",
+      "type": "INVESTIGATION",
+      "details": "[TEST-2] CONTAINED in 0.93s, risk 39, engine=rules"
+    },
+    {
+      "ts": "2026-09-12T09:51:22.730Z",
+      "type": "ALERT_INGEST",
+      "details": "[TEST-2] Unauthorized Harvester from Host Sensor"
+    },
+    {
+      "ts": "2026-09-12T09:51:14.422Z",
+      "type": "ESCALATION",
+      "details": "[TEST-1] Escalated to human governance (risk 82)."
+    },
+    {
+      "ts": "2026-09-12T09:51:14.422Z",
+      "type": "INVESTIGATION",
+      "details": "[TEST-1] PENDING_APPROVAL in 0.95s, risk 82, engine=rules"
+    },
+    {
+      "ts": "2026-09-12T09:51:13.472Z",
+      "type": "ALERT_INGEST",
+      "details": "[TEST-1] LockBit 3.0 Ransomware Test from CrowdStrike"
+    },
+    {
+      "ts": "2026-09-12T09:50:51.942Z",
+      "type": "ALERT_INGEST",
+      "details": "[TEST-1] LockBit 3.0 Ransomware Test from CrowdStrike"
+    },
+    {
       "ts": "2026-09-12T09:40:07.754Z",
       "type": "INVESTIGATION",
       "details": "[HARVEST-MTY726E3] CONTAINED in 0.94s, risk 49, engine=rules"
@@ -490,6 +706,46 @@
   ],
   "approvals": [
     {
+      "id": "APP-MTY8AHV0",
+      "incidentId": "MEM-EP-2026-371",
+      "title": "LockBit 3.0 Ransomware Outbreak & Shadow Copy Deletion",
+      "target": "FIN-SERVER-04 (192.168.10.45)",
+      "riskScore": 82,
+      "consensus": "3/4 agents (75%)",
+      "proposedAction": "Isolate FIN-SERVER-04 (192.168.10.45), inject OS firewall rule & terminate PID",
+      "reasoning": "Risk 82 exceeds threshold 80 and target is core infrastructure (FIN-SERVER-04 (192.168.10.45)).",
+      "alert": {
+        "id": "RANSOM-MTY8AH32",
+        "title": "LockBit 3.0 Ransomware Outbreak & Shadow Copy Deletion",
+        "source": "CrowdStrike Falcon Sensor / Host EDR",
+        "targetHost": "FIN-SERVER-04 (192.168.10.45)",
+        "ioc": "185.220.101.5",
+        "payload": "powershell.exe -enc SQBFAFgAKABOAGUAdw... vssadmin delete shadows /all /quiet & LockBit3.0_Payload.exe"
+      },
+      "status": "PENDING",
+      "createdAt": "2026-09-12T10:14:34.476Z"
+    },
+    {
+      "id": "APP-MTY7GHKM",
+      "incidentId": "MEM-EP-2026-503",
+      "title": "LockBit 3.0 Ransomware Test",
+      "target": "FIN-SERVER-04",
+      "riskScore": 82,
+      "consensus": "3/4 agents (75%)",
+      "proposedAction": "Isolate FIN-SERVER-04, inject OS firewall rule & terminate PID",
+      "reasoning": "Risk 82 exceeds threshold 80 and target is core infrastructure (FIN-SERVER-04).",
+      "alert": {
+        "id": "TEST-1",
+        "title": "LockBit 3.0 Ransomware Test",
+        "targetHost": "FIN-SERVER-04",
+        "source": "CrowdStrike",
+        "ioc": "185.220.101.5",
+        "payload": "powershell.exe -enc vssadmin delete shadows"
+      },
+      "status": "PENDING",
+      "createdAt": "2026-09-12T09:51:14.422Z"
+    },
+    {
       "id": "APP-MSJU7U79",
       "incidentId": "MEM-EP-2026-750",
       "title": "AWS S3 Cloud Exfiltration via STS AssumeRole",
@@ -599,9 +855,9 @@
     }
   ],
   "stats": {
-    "incidents": 13,
+    "incidents": 18,
     "llmRuns": 11,
-    "rulesRuns": 2,
+    "rulesRuns": 7,
     "totalToolCalls": 144
   }
 }

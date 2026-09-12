@@ -12,6 +12,7 @@ class DigitalSOCTwin {
             { id: 'FW-PERIMETER-01', name: 'Perimeter Palo Alto FW', type: 'Firewall', enclave: 'Network Gateway', x: 0.15, y: 0.5, status: 'healthy', ip: '203.0.113.1' },
             { id: 'DC-PRIMARY-01', name: 'Domain Controller AD', type: 'Domain Controller', enclave: 'Core Infrastructure', x: 0.45, y: 0.25, status: 'healthy', ip: '192.168.1.10' },
             { id: 'FIN-SERVER-04', name: 'FIN-SERVER-04 App', type: 'Workstation', enclave: 'Finance Subnet', x: 0.45, y: 0.65, status: 'healthy', ip: '192.168.10.45' },
+            { id: 'DEV-WORKSTATION-09', name: 'DEV-WORKSTATION-09', type: 'Workstation', enclave: 'Developer Sandbox', x: 0.45, y: 0.85, status: 'healthy', ip: '192.168.20.14' },
             { id: 'DB-PROD-SQL-01', name: 'Production SQL DB', type: 'Database', enclave: 'Database Enclave', x: 0.75, y: 0.35, status: 'healthy', ip: '192.168.10.50' },
             { id: 'AWS-S3-PROD-LOGS', name: 'AWS S3 Cloud Vault', type: 'Cloud Resource', enclave: 'AWS us-east-1', x: 0.75, y: 0.75, status: 'healthy', ip: '10.0.4.12' }
         ];
@@ -19,6 +20,7 @@ class DigitalSOCTwin {
         this.connections = [
             { from: 'FW-PERIMETER-01', to: 'DC-PRIMARY-01', active: false },
             { from: 'FW-PERIMETER-01', to: 'FIN-SERVER-04', active: false },
+            { from: 'FW-PERIMETER-01', to: 'DEV-WORKSTATION-09', active: false },
             { from: 'FIN-SERVER-04', to: 'DC-PRIMARY-01', active: false },
             { from: 'FIN-SERVER-04', to: 'DB-PROD-SQL-01', active: false },
             { from: 'DC-PRIMARY-01', to: 'AWS-S3-PROD-LOGS', active: false }
@@ -163,11 +165,85 @@ class DigitalSOCTwin {
     }
 
     setAttackPath(fromId, toId) {
-        const conn = this.connections.find(c => (c.from === fromId && c.to === toId) || (c.from === toId && c.to === fromId));
-        if (conn) conn.active = true;
+        let conn = this.connections.find(c => (c.from === fromId && c.to === toId) || (c.from === toId && c.to === fromId));
+        if (!conn) {
+            conn = { from: fromId, to: toId, active: true };
+            this.connections.push(conn);
+        } else {
+            conn.active = true;
+        }
+    }
+
+    injectThreatNode(ioc, targetHost) {
+        if (!ioc) return;
+        const cleanIoc = ioc.split(' ')[0].split(':')[0];
+        const threatId = `EXT-${cleanIoc}`;
+        let threatNode = this.nodes.find(n => n.id === threatId);
+
+        if (!threatNode) {
+            threatNode = {
+                id: threatId,
+                name: `Adversary C2 (${cleanIoc})`,
+                type: 'External Adversary C2',
+                enclave: 'Untrusted WAN',
+                x: 0.12,
+                y: 0.18,
+                status: 'compromised',
+                ip: cleanIoc,
+                isExternal: true
+            };
+            this.nodes.push(threatNode);
+        } else {
+            threatNode.status = 'compromised';
+        }
+
+        // Map target host to internal node id
+        let targetId = 'FIN-SERVER-04';
+        if (targetHost) {
+            if (targetHost.includes('DEV-WORKSTATION') || targetHost.includes('192.168.20')) targetId = 'DEV-WORKSTATION-09';
+            else if (targetHost.includes('DC-PRIMARY') || targetHost.includes('192.168.1')) targetId = 'DC-PRIMARY-01';
+            else if (targetHost.includes('DB-PROD') || targetHost.includes('192.168.10.50')) targetId = 'DB-PROD-SQL-01';
+            else if (targetHost.includes('AWS') || targetHost.includes('S3')) targetId = 'AWS-S3-PROD-LOGS';
+        }
+
+        this.setNodeStatus(targetId, 'compromised');
+        this.setAttackPath(threatId, 'FW-PERIMETER-01');
+        this.setAttackPath('FW-PERIMETER-01', targetId);
+    }
+
+    containThreatNode(ioc, targetHost) {
+        const cleanIoc = (ioc || '').split(' ')[0].split(':')[0];
+        const threatId = `EXT-${cleanIoc}`;
+        const threatNode = this.nodes.find(n => n.id === threatId);
+        if (threatNode) threatNode.status = 'isolated';
+
+        let targetId = 'FIN-SERVER-04';
+        if (targetHost) {
+            if (targetHost.includes('DEV-WORKSTATION') || targetHost.includes('192.168.20')) targetId = 'DEV-WORKSTATION-09';
+            else if (targetHost.includes('DC-PRIMARY')) targetId = 'DC-PRIMARY-01';
+        }
+        this.setNodeStatus(targetId, 'isolated');
+
+        // Deactivate active attack lines
+        this.connections.forEach(c => {
+            if (c.from === threatId || c.to === threatId) c.active = false;
+        });
+    }
+
+    syncLiveTelemetry(telemetry) {
+        if (!telemetry || !telemetry.sockets) return;
+        const knownSuspicious = ['185.', '193.', '45.', '91.'];
+        const socks = telemetry.sockets.sockets || [];
+        socks.forEach(s => {
+            if (s.isExternal && knownSuspicious.some(p => s.remote.startsWith(p))) {
+                const extIp = s.remote.split(':')[0];
+                this.injectThreatNode(extIp, 'FIN-SERVER-04');
+            }
+        });
     }
 
     resetTopology() {
+        this.nodes = this.nodes.filter(n => !n.isExternal);
         this.nodes.forEach(n => n.status = 'healthy');
         this.connections.forEach(c => c.active = false);
     }

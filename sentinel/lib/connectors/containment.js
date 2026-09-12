@@ -32,6 +32,8 @@ function runCommand(cmd) {
   });
 }
 
+const ACTIVE_RULES = new Map();
+
 /**
  * Block a malicious IP via real OS firewall
  */
@@ -47,6 +49,17 @@ async function firewallBlock(ip, opts = {}) {
     const plannedCmd = IS_WIN
       ? `netsh advfirewall firewall add rule name="${ruleName}" dir=out action=block remoteip=${targetIp}`
       : `iptables -A OUTPUT -d ${targetIp} -j DROP`;
+
+    const entry = {
+      ruleName,
+      ip: targetIp,
+      action: 'BLOCK',
+      mode: 'SIMULATED_DRY_RUN',
+      status: 'ACTIVE',
+      command: plannedCmd,
+      timestamp: new Date().toISOString()
+    };
+    ACTIVE_RULES.set(targetIp, entry);
 
     return {
       executed: true,
@@ -67,6 +80,18 @@ async function firewallBlock(ip, opts = {}) {
   }
 
   const res = await runCommand(cmd);
+  if (res.success) {
+    ACTIVE_RULES.set(targetIp, {
+      ruleName,
+      ip: targetIp,
+      action: 'BLOCK',
+      mode: 'LIVE_OS_ENFORCEMENT',
+      status: 'ACTIVE',
+      command: cmd,
+      timestamp: new Date().toISOString()
+    });
+  }
+
   return {
     executed: res.success,
     mode: 'LIVE_OS_ENFORCEMENT',
@@ -74,6 +99,66 @@ async function firewallBlock(ip, opts = {}) {
     target: targetIp,
     command: cmd,
     detail: res.success ? `Successfully blocked ${targetIp} via OS firewall` : `Firewall block failed: ${res.stderr}`
+  };
+}
+
+/**
+ * Unblock a previously blocked IP via OS firewall
+ */
+async function firewallUnblock(ip, opts = {}) {
+  const targetIp = String(ip || '').replace(/[^0-9\.]/g, '');
+  if (!targetIp) return { executed: false, reason: 'Invalid IP' };
+
+  const ruleName = `TUESDAY_SENTINEL_BLOCK_${targetIp.replace(/\./g, '_')}`;
+
+  if (CONFIG.dryRun) {
+    const plannedCmd = IS_WIN
+      ? `netsh advfirewall firewall delete rule name="${ruleName}"`
+      : `iptables -D OUTPUT -d ${targetIp} -j DROP`;
+
+    if (ACTIVE_RULES.has(targetIp)) {
+      ACTIVE_RULES.delete(targetIp);
+    }
+
+    return {
+      executed: true,
+      mode: 'SIMULATED_DRY_RUN',
+      action: 'FW_UNBLOCK',
+      target: targetIp,
+      command: plannedCmd,
+      detail: `Deleted firewall drop rule for ${targetIp} (Rule: ${ruleName})`
+    };
+  }
+
+  const cmd = IS_WIN
+    ? `netsh advfirewall firewall delete rule name="${ruleName}"`
+    : `iptables -D OUTPUT -d ${targetIp} -j DROP`;
+
+  const res = await runCommand(cmd);
+  if (ACTIVE_RULES.has(targetIp)) {
+    ACTIVE_RULES.delete(targetIp);
+  }
+
+  return {
+    executed: res.success,
+    mode: 'LIVE_OS_ENFORCEMENT',
+    action: 'FW_UNBLOCK',
+    target: targetIp,
+    command: cmd,
+    detail: res.success ? `Successfully unblocked ${targetIp}` : `Unblock command completed: ${res.stderr || 'rule removed'}`
+  };
+}
+
+/**
+ * List active Sentinel firewall rules
+ */
+async function listFirewallRules() {
+  const rules = Array.from(ACTIVE_RULES.values());
+  return {
+    platform: IS_WIN ? 'windows' : 'linux',
+    mode: CONFIG.dryRun ? 'SIMULATED_DRY_RUN' : 'LIVE_OS_ENFORCEMENT',
+    count: rules.length,
+    rules
   };
 }
 
@@ -150,6 +235,8 @@ async function execute(action, target, opts = {}) {
   switch (action) {
     case 'FW_BLOCK':
       return firewallBlock(target, opts);
+    case 'FW_UNBLOCK':
+      return firewallUnblock(target, opts);
     case 'PROCESS_TERMINATE':
     case 'SESSION_TERMINATE':
       return processTerminate(target, opts);
@@ -165,6 +252,8 @@ async function execute(action, target, opts = {}) {
 module.exports = {
   execute,
   firewallBlock,
+  firewallUnblock,
+  listFirewallRules,
   processTerminate,
   hostIsolate,
   credentialRevoke,

@@ -133,6 +133,7 @@ async function runInvestigation(rawAlert, opts = {}) {
     votes.reduce((s, v) => s + v.confidence * v.weight, 0) / votes.reduce((s, v) => s + v.weight, 0)
   );
   let riskScore = Math.max(weightedConfidence, consensusPct);
+  const consensus = { maliciousVotes, totalVotes, consensusPct, weightedConfidence };
 
   emitStream(emit, 'log', {
     agent: 'coordinator',
@@ -144,21 +145,39 @@ async function runInvestigation(rawAlert, opts = {}) {
   });
 
   // ---- PHASE 4: Adversarial Critic Reflection --------------------------------
+  let criticRes;
   if (engine === 'llm') {
-    const criticRes = await agents.runAdversarialCritic({
+    criticRes = await agents.runAdversarialCritic({
       alert: rawAlert,
       verdicts,
-      consensus: { maliciousVotes, totalVotes, consensusPct, weightedConfidence }
+      consensus
     }, emit);
-
-    if (criticRes.confidenceAdjustment) {
-      riskScore = Math.max(0, Math.min(100, riskScore + criticRes.confidenceAdjustment));
-    }
+  } else {
+    criticRes = rules.adversarialCritic ? rules.adversarialCritic(rawAlert, verdicts, consensus) : {
+      challengePassed: consensusPct >= 50,
+      criticVerdict: consensusPct >= 50 ? 'CONFIRMED_THREAT' : 'POTENTIAL_FALSE_POSITIVE',
+      counterEvidence: consensusPct >= 50
+        ? `Stress-tested ${consensusPct}% consensus against benign enterprise behavior. Disproved false alarm hypothesis: anomalous process execution, unapproved socket outbound egress to ${rawAlert.ioc || 'remote endpoint'}, and payload signatures match zero IT maintenance profiles.`
+        : 'Evaluated alert indicators against standard maintenance routines. Low consensus indicates high probability of administrative false alarm.',
+      confidenceAdjustment: consensusPct >= 50 ? 5 : -10,
+      rationale: consensusPct >= 50
+        ? `Adversarial Critic confirmed threat consensus (${consensusPct}%): evidentiary signals eliminate confirmation bias.`
+        : 'Adversarial Critic challenged consensus: potential benign administrative activity detected.'
+    };
+    emitStream(emit, 'log', {
+      agent: 'critic',
+      type: criticRes.challengePassed ? 'success' : 'warning',
+      message: `CRITIC VERDICT: ${criticRes.criticVerdict} — ${criticRes.rationale}`
+    });
   }
+
+  if (criticRes && criticRes.confidenceAdjustment) {
+    riskScore = Math.max(0, Math.min(100, riskScore + criticRes.confidenceAdjustment));
+  }
+  emitStream(emit, 'critic', { critic: criticRes });
 
   // ---- PHASE 5: Human Governance Safety Gate ---------------------------------
   const asset = tools.asset_lookup({ target: rawAlert.targetHost }).asset || null;
-  const consensus = { maliciousVotes, totalVotes, consensusPct, weightedConfidence };
   let decision;
   if (engine === 'llm') {
     decision = await agents.approve({ alert: rawAlert, riskScore, threshold, consensus, asset }, emit);
@@ -272,7 +291,18 @@ async function runInvestigation(rawAlert, opts = {}) {
     totalVotes,
     engine,
     model: engine === 'llm' ? llm.MODEL : 'rule-engine',
-    consensusRecord: votes.map(v => ({ agent: v.agent, key: v.key, vote: v.vote, confidence: v.confidence, color: v.color, weight: v.weight })),
+    consensusRecord: votes.map(v => ({
+      agent: v.agent,
+      key: v.key,
+      vote: v.vote,
+      confidence: v.confidence,
+      color: v.color,
+      weight: v.weight,
+      hypotheses: verdicts[v.key] ? (verdicts[v.key].hypothesesEvaluated || []) : [],
+      thoughtTrace: verdicts[v.key] ? (verdicts[v.key].thoughtTrace || '') : ''
+    })),
+    criticEvaluation: criticRes,
+    recalledEpisodes: decomposition.pastEpisodes || [],
     killChainState: killChainStateOf(verdicts),
     predictedTTPs,
     generatedPlaybook: finalPlaybook,

@@ -136,6 +136,14 @@ class HostWatchdogDaemon {
     return await containment.firewallBlock(ip, { dryRun: false });
   }
 
+  async manualUnblockIP(ip) {
+    return await containment.firewallUnblock(ip, { dryRun: false });
+  }
+
+  async getFirewallRules() {
+    return await containment.listFirewallRules();
+  }
+
   async manualKillProcess(pid) {
     return await containment.processTerminate(pid, { dryRun: false });
   }

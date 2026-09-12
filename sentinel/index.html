@@ -180,10 +180,16 @@
                             <div class="agent-swarm-map" id="agent-swarm-nodes">
                                 <svg class="swarm-svg-canvas" id="swarm-svg-connections"></svg>
 
-                                <div class="agent-node" data-agent="coordinator" style="top: 12%; left: 50%; transform: translateX(-50%);">
+                                <div class="agent-node" data-agent="coordinator" style="top: 12%; left: 42%; transform: translateX(-50%);">
                                     <div class="node-icon bg-matrix-green"><i class="fa-solid fa-sitemap"></i></div>
                                     <div class="node-label">Coordinator</div>
                                     <span class="node-status badge-matrix-green">Planning</span>
+                                </div>
+
+                                <div class="agent-node" data-agent="critic" style="top: 12%; left: 72%; transform: translateX(-50%);">
+                                    <div class="node-icon" style="background:#D97706; color:#1F2A2E;"><i class="fa-solid fa-user-ninja"></i></div>
+                                    <div class="node-label" style="color:#D97706;">Critic</div>
+                                    <span class="node-status" style="border-color:#D97706; color:#D97706; background:rgba(217,119,6,0.12);">Challenging</span>
                                 </div>
 
                                 <div class="agent-node" data-agent="log" style="top: 42%; left: 12%;">
@@ -614,6 +620,29 @@
                                 </thead>
                                 <tbody id="tbody-host-registry">
                                     <tr><td colspan="4" style="text-align: center; color: #888;">Scanning registry autostart keys...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    <!-- Active Firewall Rules & 1-Click Rollback -->
+                    <div class="matrix-card col-12" style="grid-column: span 12; margin-top: 1rem;">
+                        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3><i class="fa-solid fa-fire-extinguisher"></i> ACTIVE HOST FIREWALL BLOCK RULES (netsh / iptables)</h3>
+                            <button class="btn btn-matrix-outline btn-sm" id="btn-refresh-firewall-rules"><i class="fa-solid fa-arrows-rotate"></i> REFRESH RULES</button>
+                        </div>
+                        <div class="card-body" style="max-height: 250px; overflow-y: auto;">
+                            <table class="matrix-table" style="width: 100%; font-size: 0.8rem; text-align: left;">
+                                <thead>
+                                    <tr>
+                                        <th>RULE NAME</th>
+                                        <th>TARGET IP</th>
+                                        <th>MODE</th>
+                                        <th>BLOCKED AT</th>
+                                        <th>STATUS</th>
+                                        <th>ACTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-host-firewall-rules">
+                                    <tr><td colspan="6" style="text-align: center; color: #888;">No active firewall rules injected yet. Run an attack drill or use manual block.</td></tr>
                                 </tbody>
                             </table>
                         </div>

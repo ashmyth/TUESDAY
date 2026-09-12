@@ -251,6 +251,9 @@ class TuesdayApp {
             ['coordinator', 'threatintel'],
             ['coordinator', 'malware'],
             ['coordinator', 'cloud'],
+            ['coordinator', 'critic'],
+            ['critic', 'approval'],
+            ['critic', 'response'],
             ['coordinator', 'response'],
             ['coordinator', 'compliance'],
             ['coordinator', 'approval'],
@@ -355,6 +358,10 @@ class TuesdayApp {
         this.addAuditLog('ALERT_INGEST', `SIEM alert [${alert.id}] received from ${alert.source} targeting ${alert.targetHost}.`);
         this.startMTTRTimer();
 
+        if (window.SOCTwinInstance && alert.ioc) {
+            window.SOCTwinInstance.injectThreatNode(alert.ioc, alert.targetHost);
+        }
+
         const result = await SwarmEngine.processIncidentAlert(alert);
 
         this.stopMTTRTimer(result.latencySec);
@@ -372,8 +379,12 @@ class TuesdayApp {
         this.renderPCAPPackets(alert);
 
         if (result.status === 'CONTAINED') {
-            AudioEngine.speak(`Autonomous containment executed successfully in ${result.latencySec} seconds with 100 percent agent consensus.`);
+            if (window.SOCTwinInstance && alert.ioc) {
+                window.SOCTwinInstance.containThreatNode(alert.ioc, alert.targetHost);
+            }
+            AudioEngine.speak(`Autonomous containment executed successfully in ${result.latencySec} seconds with ${result.consensusPct}% agent consensus.`);
         }
+        if (this.loadFirewallRules) this.loadFirewallRules();
     }
 
     // =====================================================
@@ -467,7 +478,33 @@ class TuesdayApp {
                     </div>
                 </div>`;
         });
+
+        const critic = SwarmEngine.criticEvaluation || (result && result.criticEvaluation);
+        if (critic) {
+            const isConfirmed = critic.challengePassed || critic.criticVerdict === 'CONFIRMED_THREAT';
+            const badgeCls = isConfirmed ? 'badge-matrix-red' : 'badge-matrix-amber';
+            html += `
+                <div style="margin-top:1rem; padding:0.75rem; background:rgba(217,119,6,0.12); border:1px solid rgba(217,119,6,0.4); border-radius:6px;" id="consensus-critic-box">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                        <span style="font-size:0.75rem; font-weight:700; color:#D97706;">
+                            <i class="fa-solid fa-user-ninja"></i> ADVERSARIAL CRITIC REFLECTION
+                        </span>
+                        <span class="badge ${badgeCls}">${critic.criticVerdict || (isConfirmed ? 'CONFIRMED_THREAT' : 'POTENTIAL_FALSE_POSITIVE')}</span>
+                    </div>
+                    <div style="font-size:0.72rem; color:var(--text-muted); line-height:1.4;">
+                        ${critic.rationale || critic.counterEvidence || 'Consensus verified against false-positive baselines.'}
+                    </div>
+                    ${critic.confidenceAdjustment ? `<div style="font-size:0.68rem; color:#D97706; margin-top:0.3rem;"><strong>Confidence Adjustment:</strong> ${critic.confidenceAdjustment > 0 ? '+' : ''}${critic.confidenceAdjustment}%</div>` : ''}
+                </div>`;
+        }
         panel.innerHTML = html;
+    }
+
+    renderCriticEvaluation(critic) {
+        const existing = document.getElementById('consensus-critic-box');
+        if (!existing && this._lastResult) {
+            this.renderConsensusPanel(this._lastResult);
+        }
     }
 
     // =====================================================
@@ -699,6 +736,20 @@ class TuesdayApp {
         const confPct = agent.confidence;
         const confColor = confPct > 80 ? 'var(--matrix-red)' : confPct > 50 ? 'var(--matrix-amber)' : 'var(--matrix-green)';
 
+        let hypotheses = agent.hypothesesEvaluated || agent.hypotheses;
+        if (Array.isArray(hypotheses) && hypotheses.length >= 2) {
+            hypotheses = {
+                verdict: hypotheses[0].supported ? 'H1_CONFIRMED' : 'H2_ACCEPTED',
+                h1_malicious: hypotheses[0].hypothesis + (hypotheses[0].evidence ? ' — ' + hypotheses[0].evidence : ''),
+                h2_benign: hypotheses[1].hypothesis + (hypotheses[1].evidence ? ' — ' + hypotheses[1].evidence : ''),
+                decidingEvidence: hypotheses[0].evidence || hypotheses[1].evidence
+            };
+        }
+        let thoughtTrace = agent.thoughtTrace;
+        if (typeof thoughtTrace === 'string') {
+            thoughtTrace = thoughtTrace.split('\n').filter(s => s.trim());
+        }
+
         panel.innerHTML = `
             <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--matrix-card-border);padding-bottom:1rem;margin-bottom:1rem;">
                 <div style="display:flex;align-items:center;gap:1rem;">
@@ -731,6 +782,78 @@ class TuesdayApp {
                     <div class="confidence-fill" style="width:${confPct}%;background:${confColor};"></div>
                 </div>
             </div>
+
+            <!-- COMPETING HYPOTHESES (ACH) EVALUATION -->
+            ${hypotheses ? `
+            <div class="matrix-card" style="margin-bottom:1rem; border-color: rgba(62,122,132,0.35);">
+                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="color:var(--matrix-cyan);"><i class="fa-solid fa-code-compare"></i> COMPETING HYPOTHESES EVALUATION (ACH)</h3>
+                    <span class="matrix-pill">STATUS: ${hypotheses.verdict || 'EVALUATED'}</span>
+                </div>
+                <div class="card-body" style="font-size:0.75rem;">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem; margin-bottom:0.75rem;">
+                        <div style="background:rgba(253,64,64,0.06); border:1px solid rgba(253,64,64,0.3); border-radius:6px; padding:0.6rem;">
+                            <div style="color:var(--matrix-red); font-weight:bold; margin-bottom:0.3rem;"><i class="fa-solid fa-skull-crossbones"></i> H1: Malicious Attack</div>
+                            <div style="color:var(--text-main); line-height:1.35;">${hypotheses.h1_malicious || 'Hypothesis under active evaluation'}</div>
+                        </div>
+                        <div style="background:rgba(0,255,102,0.05); border:1px solid rgba(0,255,102,0.25); border-radius:6px; padding:0.6rem;">
+                            <div style="color:var(--matrix-green); font-weight:bold; margin-bottom:0.3rem;"><i class="fa-solid fa-shield-halved"></i> H2: Benign / False Positive</div>
+                            <div style="color:var(--text-main); line-height:1.35;">${hypotheses.h2_benign || 'Operational false positive hypothesis'}</div>
+                        </div>
+                    </div>
+                    ${hypotheses.decidingEvidence ? `
+                    <div style="font-size:0.72rem; color:var(--text-muted); background:rgba(0,0,0,0.25); padding:0.4rem 0.6rem; border-radius:4px;">
+                        <strong style="color:var(--matrix-amber);">DECIDING EVIDENCE:</strong> ${hypotheses.decidingEvidence}
+                    </div>` : ''}
+                </div>
+            </div>` : ''}
+
+            <!-- DEEP REASONING THOUGHT TRACE -->
+            ${thoughtTrace && thoughtTrace.length > 0 ? `
+            <div class="matrix-card" style="margin-bottom:1rem; border-color: rgba(167,139,250,0.35);">
+                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="color:#a78bfa;"><i class="fa-solid fa-brain"></i> DEEP MULTI-TURN THOUGHT TRACE</h3>
+                    <span class="badge" style="background:rgba(167,139,250,0.2); color:#a78bfa;">${thoughtTrace.length} COGNITIVE STEPS</span>
+                </div>
+                <div class="card-body scrollable" style="max-height:180px; font-size:0.73rem; background:rgba(15,23,42,0.4);">
+                    ${thoughtTrace.map((step, idx) => `
+                        <div style="display:flex; gap:0.5rem; margin-bottom:0.4rem; padding-bottom:0.4rem; border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <span style="color:#a78bfa; font-weight:bold; min-width:20px;">#${idx+1}</span>
+                            <span style="color:var(--text-main); font-family:monospace;">${step}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>` : ''}
+
+            <!-- CRITIC EVALUATION (FOR ADVERSARIAL CRITIC AGENT) -->
+            ${agentKey === 'critic' && SwarmEngine.criticEvaluation ? `
+            <div class="matrix-card" style="margin-bottom:1rem; border-color: #D97706;">
+                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="color:#D97706;"><i class="fa-solid fa-scale-balanced"></i> ADVERSARIAL CRITIC REFLECTION VERDICT</h3>
+                    <span class="badge ${SwarmEngine.criticEvaluation.verdict === 'APPROVED' ? 'badge-matrix-green' : 'badge-matrix-red'}">${SwarmEngine.criticEvaluation.verdict}</span>
+                </div>
+                <div class="card-body" style="font-size:0.75rem;">
+                    <p style="margin-bottom:0.4rem;"><strong>Critique:</strong> ${SwarmEngine.criticEvaluation.critique || 'N/A'}</p>
+                    <p style="margin-bottom:0.4rem;"><strong>Risk Assessment:</strong> <span style="color:var(--matrix-amber);">${SwarmEngine.criticEvaluation.hallucinationRisk || 'Low'}</span></p>
+                    ${SwarmEngine.criticEvaluation.alternativeExplanation ? `<p><strong>Alternative Explanation:</strong> ${SwarmEngine.criticEvaluation.alternativeExplanation}</p>` : ''}
+                </div>
+            </div>` : ''}
+
+            <!-- RECALLED EPISODIC MEMORY VECTORS -->
+            ${SwarmEngine.recalledEpisodes && SwarmEngine.recalledEpisodes.length > 0 ? `
+            <div class="matrix-card" style="margin-bottom:1rem; border-color: rgba(62,122,132,0.3);">
+                <div class="card-header">
+                    <h3><i class="fa-solid fa-database"></i> RECALLED EPISODIC MEMORY</h3>
+                </div>
+                <div class="card-body" style="font-size:0.73rem;">
+                    ${SwarmEngine.recalledEpisodes.slice(0, 3).map(ep => `
+                        <div style="background:rgba(255,255,255,0.03); border-left:3px solid var(--matrix-blue); padding:0.4rem 0.6rem; margin-bottom:0.4rem;">
+                            <div style="font-weight:bold; color:var(--matrix-blue);">${ep.id || 'EP-PAST'} &bull; ${ep.actionTaken || 'Prior Action'}</div>
+                            <div style="color:var(--text-muted); font-size:0.7rem;">${ep.trigger || ep.description || ''}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>` : ''}
 
             <div class="matrix-card" style="margin-bottom:1rem;">
                 <div class="card-header"><h3><i class="fa-solid fa-terminal"></i> DECISION REASONING LOG</h3></div>
@@ -1172,9 +1295,80 @@ class TuesdayApp {
 
         // Initial fetch
         refreshHostTelemetry();
+        this.loadFirewallRules();
+
+        document.getElementById('btn-refresh-firewall-rules')?.addEventListener('click', () => {
+            this.loadFirewallRules();
+        });
+    }
+
+    async loadFirewallRules() {
+        const tbody = document.getElementById('tbody-host-firewall-rules');
+        if (!tbody) return;
+        try {
+            const res = await fetch('/api/host/firewall/rules');
+            if (!res.ok) return;
+            const data = await res.json();
+            const rules = data.rules || [];
+            if (rules.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888;">No active firewall rules injected yet. Run an attack drill or use manual block.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = '';
+            rules.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-family:monospace;font-weight:bold;color:var(--matrix-amber);">${r.ruleName || 'RULE'}</td>
+                    <td style="font-family:monospace;color:var(--matrix-red);">${r.ip}</td>
+                    <td><span class="badge badge-matrix-red">${r.mode || 'FULL_DROP'}</span></td>
+                    <td style="font-size:0.75rem;color:var(--text-muted);">${r.blockedAt ? new Date(r.blockedAt).toLocaleTimeString() : 'Recent'}</td>
+                    <td><span class="badge badge-matrix-green">${r.status || 'ACTIVE'}</span></td>
+                    <td>
+                        <button class="btn btn-matrix-outline btn-xs" onclick="window.AppController.unblockHostIP('${r.ip}')">
+                            <i class="fa-solid fa-unlock"></i> UNBLOCK
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch (e) {
+            console.warn('[HostEDR] Firewall rules fetch error:', e);
+        }
+    }
+
+    async unblockHostIP(ip) {
+        if (!ip) return;
+        if (!confirm(`Revoke host firewall rule and unblock IP ${ip}?`)) return;
+        try {
+            const res = await fetch('/api/host/firewall/unblock', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ip })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                this.addAuditLog('FIREWALL_UNBLOCK', `Host firewall rule removed for ${ip}`);
+                AudioEngine.speak(`Firewall rule removed. IP ${ip} unblocked.`);
+                await this.loadFirewallRules();
+                // If the threat node exists on twin, mark it resolved
+                if (window.SOCTwinInstance && typeof window.SOCTwinInstance.containThreatNode === 'function') {
+                    window.SOCTwinInstance.containThreatNode(ip, 'DEV-WORKSTATION-09');
+                }
+            } else {
+                alert(`Unblock failed: ${data.detail || data.error || 'Unknown error'}`);
+            }
+        } catch (e) {
+            alert('Firewall unblock error: ' + e.message);
+        }
     }
 
     renderHostTelemetry(telemetry) {
+        // Sync with Digital Twin topology
+        if (window.SOCTwinInstance && typeof window.SOCTwinInstance.syncLiveTelemetry === 'function') {
+            window.SOCTwinInstance.syncLiveTelemetry(telemetry);
+        }
+        this.loadFirewallRules();
+
         const lblSockets = document.getElementById('lbl-total-sockets');
         const lblRegistry = document.getElementById('lbl-total-registry');
         const lblProcs = document.getElementById('lbl-total-procs');
@@ -1256,6 +1450,7 @@ class TuesdayApp {
             });
             const data = await res.json();
             alert(`Firewall Rule Injected: ${data.detail || 'Success'}`);
+            await this.loadFirewallRules();
         } catch (e) {
             alert('Firewall actuation failed: ' + e.message);
         }

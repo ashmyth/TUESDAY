@@ -262,6 +262,18 @@ const server = http.createServer(async (req, res) => {
       return sendJSON(res, 200, result);
     }
 
+    if (pathname === '/api/host/firewall/unblock' && req.method === 'POST') {
+      const body = await readBody(req);
+      if (!body.ip) return sendJSON(res, 400, { error: 'ip required' });
+      const result = await daemon.manualUnblockIP(body.ip);
+      return sendJSON(res, 200, result);
+    }
+
+    if (pathname === '/api/host/firewall/rules' && req.method === 'GET') {
+      const rules = await daemon.getFirewallRules();
+      return sendJSON(res, 200, { ok: true, ...rules });
+    }
+
     if (pathname === '/api/host/process/kill' && req.method === 'POST') {
       const body = await readBody(req);
       if (!body.pid) return sendJSON(res, 400, { error: 'pid required' });

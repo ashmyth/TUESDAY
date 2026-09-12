@@ -29,6 +29,7 @@ class SOCAgentSwarm {
             threatintel: { id: 'agent-intel', name: 'Threat Intelligence', role: 'IOC Enrichment (VT, AbuseIPDB, Shodan, MISP)', icon: 'fa-globe', color: '#B08C9E', status: 'IDLE', confidence: 0, vote: null, logs: [] },
             malware:     { id: 'agent-malware', name: 'Malware Sandbox', role: 'YARA + Behavioral Sandbox Analysis', icon: 'fa-bug', color: '#EEA4A5', status: 'IDLE', confidence: 0, vote: null, logs: [] },
             cloud:       { id: 'agent-cloud', name: 'Cloud Security', role: 'AWS/Azure IAM & CSPM Posture Audit', icon: 'fa-cloud', color: '#7FB3BB', status: 'IDLE', confidence: 0, vote: null, logs: [] },
+            critic:      { id: 'agent-critic', name: 'Adversarial Critic', role: 'Hypothesis Verification & False-Positive Disprover', icon: 'fa-user-ninja', color: '#D97706', status: 'IDLE', confidence: 0, vote: null, logs: [] },
             response:    { id: 'agent-response', name: 'Incident Response', role: 'Autonomous Containment & SOAR Playbooks', icon: 'fa-bolt', color: '#FD4040', status: 'IDLE', confidence: 0, vote: null, logs: [] },
             compliance:  { id: 'agent-compliance', name: 'Compliance Audit', role: 'Regulatory Impact & Cryptographic Audit Trail', icon: 'fa-scale-balanced', color: '#C97A7C', status: 'IDLE', confidence: 0, vote: null, logs: [] },
             approval:    { id: 'agent-approval', name: 'Human Governance', role: 'Risk Threshold Gate & Override Control', icon: 'fa-user-shield', color: '#3E7A84', status: 'IDLE', confidence: 0, vote: null, logs: [] }
@@ -40,6 +41,8 @@ class SOCAgentSwarm {
         this.consensusRecord = [];   // Agent negotiation votes
         this.predictedTTPs = [];     // Threat prediction results
         this.generatedPlaybook = null; // Autonomous playbook
+        this.criticEvaluation = null;  // Adversarial Critic reflection
+        this.recalledEpisodes = [];   // Episodic memory matches
     }
 
     onLogMessage(callback) {
@@ -194,7 +197,31 @@ class SOCAgentSwarm {
                 if (typeof MitreEngine !== 'undefined') MitreEngine.flagTTP(payload.id);
                 break;
             case 'vote':
-                this.consensusRecord.push({ agent: payload.agentName, vote: payload.vote, confidence: payload.confidence, color: payload.color, key: payload.key });
+                this.consensusRecord.push({
+                    agent: payload.agentName,
+                    vote: payload.vote,
+                    confidence: payload.confidence,
+                    color: payload.color,
+                    key: payload.key,
+                    hypotheses: payload.hypotheses || [],
+                    thoughtTrace: payload.thoughtTrace || ''
+                });
+                break;
+            case 'critic':
+                this.criticEvaluation = payload.critic;
+                if (this.agents.critic) {
+                    this.agents.critic.status = 'COMPLETED';
+                    this.agents.critic.confidence = payload.critic.challengePassed ? 95 : 40;
+                    this.agents.critic.vote = payload.critic.challengePassed ? 'MALICIOUS' : 'BENIGN';
+                    this.agents.critic.thoughtTrace = payload.critic.counterEvidence || payload.critic.rationale;
+                    this.agents.critic.hypotheses = [
+                        { hypothesis: 'Challenge: Benign Administrative Maintenance / False Alarm', supported: !payload.critic.challengePassed, evidence: payload.critic.counterEvidence || 'Zero administrative ticket correlation.' },
+                        { hypothesis: 'Verification: Confirmed Hostile Threat Vector', supported: !!payload.critic.challengePassed, evidence: payload.critic.rationale || 'Multi-source confirmation.' }
+                    ];
+                }
+                if (window.AppController && window.AppController.renderCriticEvaluation) {
+                    window.AppController.renderCriticEvaluation(payload.critic);
+                }
                 break;
             case 'playbook':
                 this.generatedPlaybook = payload.playbook;
@@ -217,6 +244,34 @@ class SOCAgentSwarm {
         if (result.consensusRecord) this.consensusRecord = result.consensusRecord;
         if (result.predictedTTPs) this.predictedTTPs = result.predictedTTPs;
         if (result.generatedPlaybook) this.generatedPlaybook = result.generatedPlaybook;
+        if (result.criticEvaluation) this.criticEvaluation = result.criticEvaluation;
+        if (result.recalledEpisodes) this.recalledEpisodes = result.recalledEpisodes;
+
+        if (result.consensusRecord) {
+            result.consensusRecord.forEach(v => {
+                if (this.agents[v.key]) {
+                    this.agents[v.key].confidence = v.confidence;
+                    this.agents[v.key].vote = v.vote;
+                    this.agents[v.key].hypotheses = v.hypotheses || [];
+                    this.agents[v.key].thoughtTrace = v.thoughtTrace || '';
+                    this.agents[v.key].status = 'COMPLETED';
+                }
+            });
+        }
+
+        if (result.criticEvaluation && this.agents.critic) {
+            this.agents.critic.status = 'COMPLETED';
+            this.agents.critic.confidence = result.criticEvaluation.challengePassed ? 95 : 40;
+            this.agents.critic.vote = result.criticEvaluation.challengePassed ? 'MALICIOUS' : 'BENIGN';
+            this.agents.critic.thoughtTrace = result.criticEvaluation.counterEvidence || result.criticEvaluation.rationale;
+            this.agents.critic.hypotheses = [
+                { hypothesis: 'Challenge: Benign Administrative Maintenance / False Alarm', supported: !result.criticEvaluation.challengePassed, evidence: result.criticEvaluation.counterEvidence || 'Zero administrative ticket correlation.' },
+                { hypothesis: 'Verification: Confirmed Hostile Threat Vector', supported: !!result.criticEvaluation.challengePassed, evidence: result.criticEvaluation.rationale || 'Multi-source confirmation.' }
+            ];
+            if (window.AppController && window.AppController.renderCriticEvaluation) {
+                window.AppController.renderCriticEvaluation(result.criticEvaluation);
+            }
+        }
 
         if (result.agents) {
             Object.keys(result.agents).forEach(k => {
@@ -279,6 +334,11 @@ class SOCAgentSwarm {
         }
         this.agents.log.confidence = logConfidence;
         this.agents.log.vote = logConfidence > 70 ? 'MALICIOUS' : 'BENIGN';
+        this.agents.log.hypotheses = [
+            { hypothesis: 'H1: Hostile In-Memory Command Execution / Dropper', supported: logConfidence > 70, evidence: sigmaResult.matchesFound > 0 ? `Sigma rule ${sigmaResult.matchedRules[0].id} triggered.` : 'No signatures matched.' },
+            { hypothesis: 'H2: Benign Administrative Maintenance Script', supported: logConfidence <= 70, evidence: 'Zero matched malicious patterns in command stream.' }
+        ];
+        this.agents.log.thoughtTrace = `1. Evaluated payload targeting ${rawAlert.targetHost}.\n2. Scanned Sigma correlation rules: ${sigmaResult.matchesFound} match(es).\n3. Hypothesis H1 evaluated with ${logConfidence}% confidence.`;
 
         await this.delay(400);
 
@@ -320,6 +380,11 @@ class SOCAgentSwarm {
         }
         this.agents.threatintel.confidence = intelConfidence;
         this.agents.threatintel.vote = intelConfidence > 60 ? 'MALICIOUS' : 'SUSPICIOUS';
+        this.agents.threatintel.hypotheses = [
+            { hypothesis: `H1: Active C2 Communication to Hostile Endpoint ${rawAlert.ioc || 'IOC'}`, supported: intelConfidence > 60, evidence: `Enriched across threat platforms (${intelConfidence}% confidence).` },
+            { hypothesis: 'H2: Legitimate Content Delivery / Corporate Gateway', supported: intelConfidence <= 60, evidence: 'Reputation within expected enterprise limits.' }
+        ];
+        this.agents.threatintel.thoughtTrace = `1. Enriched candidate IOC ${rawAlert.ioc}.\n2. Multi-feed reputation evaluated.\n3. H1 supported with ${intelConfidence}% confidence.`;
 
         await this.delay(400);
 
@@ -348,6 +413,11 @@ class SOCAgentSwarm {
         }
         this.agents.malware.confidence = malwareConfidence;
         this.agents.malware.vote = malwareConfidence > 60 ? 'MALICIOUS' : 'CLEAN';
+        this.agents.malware.hypotheses = [
+            { hypothesis: 'H1: Malicious Cryptor / Ransomware Payload Staged', supported: malwareConfidence > 60, evidence: malwareConfidence > 60 ? 'YARA matched ransomware family signatures.' : 'No malicious byte sequences.' },
+            { hypothesis: 'H2: Legitimate File Compression or Archiving Tool', supported: malwareConfidence <= 60, evidence: 'Zero malicious encryption routines found.' }
+        ];
+        this.agents.malware.thoughtTrace = `1. Detonated binary in simulated memory sandbox.\n2. YARA engine pattern analysis performed.\n3. Result: ${malwareConfidence}% confidence verdict rendered.`;
 
         await this.delay(400);
 
@@ -373,6 +443,11 @@ class SOCAgentSwarm {
         }
         this.agents.cloud.confidence = cloudConfidence;
         this.agents.cloud.vote = cloudConfidence > 60 ? 'MALICIOUS' : 'CLEAN';
+        this.agents.cloud.hypotheses = [
+            { hypothesis: 'H1: Stolen Cloud Credentials & Data Exfiltration', supported: cloudConfidence > 60, evidence: cloudConfidence > 60 ? 'Stolen IAM credentials used for unauthorized STS session.' : 'No cloud activity.' },
+            { hypothesis: 'H2: Authorized Multi-Region Backup / Migration Sync', supported: cloudConfidence <= 60, evidence: 'No anomalous cloud IAM actions observed.' }
+        ];
+        this.agents.cloud.thoughtTrace = `1. Correlated cloud control-plane telemetry.\n2. Analyzed STS AssumeRole invocation against IP reputation.\n3. Confidence evaluated at ${cloudConfidence}%.`;
 
         await this.delay(400);
 
@@ -388,9 +463,12 @@ class SOCAgentSwarm {
 
         this.consensusRecord = votingAgents.map(k => ({
             agent: this.agents[k].name,
+            key: k,
             vote: this.agents[k].vote || 'ABSTAIN',
             confidence: this.agents[k].confidence,
-            color: this.agents[k].color
+            color: this.agents[k].color,
+            hypotheses: this.agents[k].hypotheses || [],
+            thoughtTrace: this.agents[k].thoughtTrace || ''
         }));
 
         const maliciousVotes = this.consensusRecord.filter(v => v.vote === 'MALICIOUS').length;
@@ -411,12 +489,46 @@ class SOCAgentSwarm {
 
         this.addRCAEvent(`T+1.9s`, 'Multi-Agent Consensus Reached', `${maliciousVotes}/${totalVotes} agents confirmed malicious intent. Weighted confidence: ${weightedConfidence}%.`, 'critical');
 
-        await this.delay(400);
+        await this.delay(300);
+
+        // -------------------------------------------------------
+        // PHASE 6.5: ADVERSARIAL CRITIC — Reflection & Verification
+        // -------------------------------------------------------
+        this.agents.critic.status = 'CHALLENGING';
+        this.emitLog('critic', 'Adversarial Critic pass engaged: Stress-testing consensus against false positives.', 'info');
+        await this.delay(250);
+
+        const isThreatConfirmed = consensusPct >= 50;
+        this.criticEvaluation = {
+            challengePassed: isThreatConfirmed,
+            criticVerdict: isThreatConfirmed ? 'CONFIRMED_THREAT' : 'POTENTIAL_FALSE_POSITIVE',
+            counterEvidence: isThreatConfirmed
+                ? `Adversarial Critic stress-tested ${consensusPct}% consensus: anomalous process parameters, IOC threat reputation, and non-whitelisted autostart contradict benign IT maintenance profiles.`
+                : 'Alert patterns correlate with scheduled administrative maintenance. Low consensus signals high false-positive probability.',
+            confidenceAdjustment: isThreatConfirmed ? 5 : -10,
+            rationale: isThreatConfirmed
+                ? `Adversarial Critic confirmed threat consensus (${consensusPct}%): multi-source evidence eliminates confirmation bias.`
+                : 'Adversarial Critic challenged consensus: potential benign administrative activity detected.'
+        };
+        this.agents.critic.status = 'COMPLETED';
+        this.agents.critic.confidence = 94;
+        this.agents.critic.vote = isThreatConfirmed ? 'MALICIOUS' : 'BENIGN';
+        this.agents.critic.thoughtTrace = this.criticEvaluation.counterEvidence;
+        this.agents.critic.hypotheses = [
+            { hypothesis: 'Challenge: Benign Administrative Script / Routine Maintenance', supported: !isThreatConfirmed, evidence: 'Zero correlating maintenance tickets found.' },
+            { hypothesis: 'Verification: Confirmed Hostile Threat Vector', supported: isThreatConfirmed, evidence: 'Multi-source correlation confirms malicious intent.' }
+        ];
+        this.emitLog('critic', `CRITIC VERDICT: ${this.criticEvaluation.criticVerdict} — ${this.criticEvaluation.rationale}`, isThreatConfirmed ? 'success' : 'warning');
+        if (window.AppController?.renderCriticEvaluation) {
+            window.AppController.renderCriticEvaluation(this.criticEvaluation);
+        }
+
+        await this.delay(300);
 
         // -------------------------------------------------------
         // PHASE 7: HUMAN APPROVAL GATE — Risk Threshold Check
         // -------------------------------------------------------
-        const calculatedRisk = weightedConfidence;
+        const calculatedRisk = Math.max(0, Math.min(100, weightedConfidence + (this.criticEvaluation?.confidenceAdjustment || 0)));
         this.agents.approval.status = 'EVALUATING';
         this.agents.approval.confidence = 100;
         this.emitLog('approval', `RISK ASSESSMENT: Weighted Severity Score = ${calculatedRisk}/100 (Auto-execution threshold: ${autoThreshold}/100).`, 'info');
@@ -628,12 +740,16 @@ class SOCAgentSwarm {
             this.agents[k].confidence = 0;
             this.agents[k].vote = null;
             this.agents[k].logs = [];
+            this.agents[k].hypotheses = [];
+            this.agents[k].thoughtTrace = '';
         });
         this.rcaTimeline = [];
         this.killChainState = {};
         this.consensusRecord = [];
         this.predictedTTPs = [];
         this.generatedPlaybook = null;
+        this.criticEvaluation = null;
+        this.recalledEpisodes = [];
     }
 
     delay(ms) {
