@@ -1,0 +1,8 @@
+{
+  "name": "tuesday-redteam",
+  "version": "1.0.0",
+  "description": "TUESDAY RedTeam Adversary Attack Suite & Purple-Teaming Simulator",
+  "main": "server.js",
+  "port": 8095,
+  "targetSentinelUrl": "http://localhost:8090"
+}

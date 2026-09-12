@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TUESDAY RedTeam — Adversary Attack Simulator</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #111827;
+      --border: #1f2937;
+      --red: #ef4444;
+      --red-hover: #dc2626;
+      --accent: #f59e0b;
+      --text: #f3f4f6;
+      --muted: #9ca3af;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 2rem; }
+    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 2rem; }
+    .logo { display: flex; align-items: center; gap: 0.75rem; font-size: 1.5rem; font-weight: 700; color: var(--red); }
+    .badge { background: rgba(239, 68, 68, 0.15); border: 1px solid var(--red); color: var(--red); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.5rem; }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 0.75rem; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; transition: border-color 0.2s; }
+    .card:hover { border-color: var(--red); }
+    .card-title { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .card-track { font-size: 0.75rem; color: var(--accent); margin-bottom: 0.75rem; font-weight: 500; }
+    .card-desc { font-size: 0.875rem; color: var(--muted); line-height: 1.5; margin-bottom: 1rem; }
+    .meta-box { background: rgba(0,0,0,0.3); border-radius: 0.5rem; padding: 0.75rem; font-size: 0.8rem; font-family: monospace; color: #d1d5db; margin-bottom: 1.25rem; word-break: break-all; }
+    .btn-launch { background: var(--red); color: white; border: none; padding: 0.75rem 1rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background 0.2s; }
+    .btn-launch:hover { background: var(--red-hover); }
+    .log-panel { margin-top: 2.5rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: 0.75rem; padding: 1.5rem; }
+    .log-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--muted); }
+    #logOutput { background: #000; border-radius: 0.5rem; padding: 1rem; font-family: monospace; font-size: 0.85rem; height: 180px; overflow-y: auto; color: #10b981; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <i class="fa-solid fa-skull-crossbones"></i>
+      TUESDAY RedTeam
+      <span class="badge">Purple-Team Simulator</span>
+    </div>
+    <div>
+      <span style="font-size: 0.85rem; color: var(--muted);">Target Sentinel SOC: <strong style="color: #60a5fa;">http://localhost:8090</strong></span>
+    </div>
+  </header>
+
+  <div class="grid" id="scenariosGrid">
+    <!-- Populated by JS -->
+  </div>
+
+  <div class="log-panel">
+    <div class="log-title"><i class="fa-solid fa-terminal"></i> Adversary Telemetry Stream</div>
+    <div id="logOutput">System initialized. Select an attack scenario above to fire live alerts into TUESDAY Sentinel...</div>
+  </div>
+
+  <script>
+    const logOutput = document.getElementById('logOutput');
+    function log(msg) {
+      const ts = new Date().toLocaleTimeString();
+      logOutput.innerHTML += `\n[${ts}] ${msg}`;
+      logOutput.scrollTop = logOutput.scrollHeight;
+    }
+
+    async function loadScenarios() {
+      try {
+        const res = await fetch('/api/scenarios');
+        const data = await res.json();
+        const grid = document.getElementById('scenariosGrid');
+        grid.innerHTML = '';
+
+        Object.entries(data.scenarios).forEach(([key, s]) => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `
+            <div>
+              <div class="card-track">${s.track}</div>
+              <div class="card-title"><i class="fa-solid fa-crosshairs" style="color:var(--red);"></i> ${s.title}</div>
+              <div class="card-desc">${s.description}</div>
+              <div class="meta-box">
+                <div><strong>Target:</strong> ${s.targetHost}</div>
+                <div><strong>IOC:</strong> ${s.ioc}</div>
+                <div><strong>TTP:</strong> ${s.mitreTtp}</div>
+              </div>
+            </div>
+            <button class="btn-launch" onclick="launchAttack('${key}', '${s.title}')">
+              <i class="fa-solid fa-rocket"></i> Launch Scenario into Sentinel
+            </button>
+          `;
+          grid.appendChild(card);
+        });
+      } catch (e) {
+        log('Failed to fetch scenarios: ' + e.message);
+      }
+    }
+
+    async function launchAttack(key, title) {
+      log(`Triggering drill: "${title}"...`);
+      try {
+        const res = await fetch('/api/attack/launch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ scenarioKey: key })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          log(`Drill dispatched! Sentinel status: ${data.sentinelResponse.status} in ${data.sentinelResponse.latencySec}s (Risk: ${data.sentinelResponse.riskScore}/100)`);
+        } else {
+          log(`Error: ${data.error}. ${data.hint || ''}`);
+        }
+      } catch (e) {
+        log(`Failed to transmit attack alert: ${e.message}`);
+      }
+    }
+
+    loadScenarios();
+  </script>
+</body>
+</html>

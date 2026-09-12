@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TUESDAY — Autonomous Multi-Agent SOC Platform</title>
+    <meta name="description" content="TUESDAY — Threat Unification Engine for Security Defense And Your SOC. Autonomous multi-agent security operations center.">
+    <!-- Google Fonts: Inter + JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&family=Share+Tech+Mono&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for UI Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for SOC Metrics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="matrix-theme">
+
+    <div class="matrix-app-container">
+        <!-- Top Header -->
+        <header class="matrix-navbar">
+            <div class="nav-brand">
+                <div class="matrix-logo">
+                    <i class="fa-solid fa-calendar-days"></i>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-title">TUESDAY</span>
+                    <span class="brand-subtitle">Threat Unification Engine · Security Defense And Your SOC</span>
+                </div>
+            </div>
+
+            <!-- Telemetry Metrics Bar -->
+            <div class="matrix-telemetry">
+                <div class="telemetry-box">
+                    <span class="lbl">SWARM STATUS</span>
+                    <span class="val green-glow" id="val-swarm-status"><i class="fa-solid fa-circle pulse"></i> 8 AGENTS ONLINE</span>
+                </div>
+                <div class="telemetry-box">
+                    <span class="lbl">INGESTED ALERTS</span>
+                    <span class="val" id="top-metric-alerts">1,428</span>
+                </div>
+                <div class="telemetry-box">
+                    <span class="lbl">AUTO-CONTAINED</span>
+                    <span class="val text-bright-green" id="top-metric-contained">99.2%</span>
+                </div>
+                <div class="telemetry-box">
+                    <span class="lbl">AVG LATENCY</span>
+                    <span class="val text-bright-green" id="top-metric-latency">1.18s</span>
+                </div>
+            </div>
+
+            <!-- Header Action Controls -->
+            <div class="header-actions">
+                <button class="btn btn-matrix-green pulse-btn" id="btn-showcase">
+                    <i class="fa-solid fa-graduation-cap"></i> <span id="lbl-showcase">SHOWCASE</span>
+                </button>
+                <button class="btn btn-matrix-outline" id="btn-toggle-audio">
+                    <i class="fa-solid fa-volume-high"></i> <span id="lbl-audio-status">AUDIO: ON</span>
+                </button>
+                <button class="btn btn-matrix-red pulse-btn" id="btn-trigger-attack">
+                    <i class="fa-solid fa-bolt"></i> LAUNCH SIMULATOR
+                </button>
+                <button class="btn btn-matrix-outline" id="btn-soar-rollback">
+                    <i class="fa-solid fa-rotate-left"></i> ROLLBACK SOAR
+                </button>
+                <button class="btn btn-matrix-green" id="btn-export-report">
+                    <i class="fa-solid fa-file-code"></i> EXECUTIVE REPORT
+                </button>
+            </div>
+        </header>
+
+        <!-- Clean Matrix Tab Navigation -->
+        <nav class="matrix-tabs">
+            <button class="tab-btn active" data-tab="tab-dashboard">
+                <i class="fa-solid fa-gauge-high"></i> COMMAND CENTER
+            </button>
+            <button class="tab-btn" data-tab="tab-swarm">
+                <i class="fa-solid fa-sitemap"></i> AGENT SWARM <span class="badge badge-matrix-green" id="badge-agent-activity">8 ACTIVE</span>
+            </button>
+            <button class="tab-btn" data-tab="tab-twin">
+                <i class="fa-solid fa-network-wired"></i> DIGITAL SOC TWIN & PCAP
+            </button>
+            <button class="tab-btn" data-tab="tab-mitre">
+                <i class="fa-solid fa-cubes"></i> MITRE ATT&CK MATRIX
+            </button>
+            <button class="tab-btn" data-tab="tab-approval">
+                <i class="fa-solid fa-shield-halved"></i> HUMAN APPROVAL QUEUE <span class="badge badge-matrix-amber" id="badge-pending-approvals">0 PENDING</span>
+            </button>
+            <button class="tab-btn" data-tab="tab-memory">
+                <i class="fa-solid fa-brain"></i> AGENT MEMORY & RULE EDITOR
+            </button>
+            <button class="tab-btn" data-tab="tab-simulator">
+                <i class="fa-solid fa-vial"></i> PURPLE TEAM SIM
+            </button>
+        </nav>
+
+        <!-- Main Workspace Area -->
+        <main class="content-area">
+
+            <!-- ================= TAB 1: COMMAND CENTER ================= -->
+            <section id="tab-dashboard" class="tab-content active">
+                
+                <!-- Clean Uncluttered Threat Alert Banner -->
+                <div class="matrix-banner alert-idle" id="active-threat-banner">
+                    <div class="banner-status-icon">
+                        <i class="fa-solid fa-shield-cat"></i>
+                    </div>
+                    <div class="banner-info">
+                        <h3 id="threat-title">> SYSTEM STATUS: MONITORING ALL ENCLAVES</h3>
+                        <p id="threat-desc">Multi-agent orchestrator actively scanning SIEM feeds, cloud logs, and endpoint telemetry.</p>
+                        <div class="banner-tags" id="threat-tags">
+                            <span class="matrix-pill">SIEM: CONNECTED</span>
+                            <span class="matrix-pill">PLAYBOOKS: READY</span>
+                            <span class="matrix-pill" id="pill-engine">ENGINE: INITIALIZING</span>
+                            <select id="llm-provider-select" class="matrix-select" style="margin-left: 10px; background: #001100; color: #00ff00; border: 1px solid #00ff00; font-family: monospace; padding: 2px 5px; cursor: pointer;">
+                                <option value="ollama">LOCAL (Ollama)</option>
+                                <option value="gemini">API (Gemini)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="banner-metrics">
+                        <div class="metric-block">
+                            <span class="num" id="threat-score-val">0/100</span>
+                            <span class="lbl">THREAT SEVERITY</span>
+                        </div>
+                        <div class="metric-block">
+                            <span class="num" id="active-agents-count">8</span>
+                            <span class="lbl">AGENTS DEPLOYED</span>
+                        </div>
+                        <div class="metric-block">
+                            <span class="num" id="mttr-timer-val">0.0s</span>
+                            <span class="lbl">LIVE MTTR COUNTER</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slim Simulation Toolbar -->
+                <div class="sim-toolbar">
+                    <div class="sim-toolbar-group">
+                        <span class="sim-toolbar-label"><i class="fa-solid fa-sliders"></i> SIMULATION</span>
+                        <button class="btn btn-matrix-green btn-sm" id="btn-sim-play"><i class="fa-solid fa-play"></i> PLAY</button>
+                        <button class="btn btn-matrix-outline btn-sm" id="btn-sim-pause"><i class="fa-solid fa-pause"></i> PAUSE</button>
+                        <button class="btn btn-matrix-outline btn-sm" id="btn-sim-step"><i class="fa-solid fa-forward-step"></i> STEP</button>
+                    </div>
+                    <div class="sim-toolbar-group">
+                        <span class="text-muted">SPEED</span>
+                        <button class="btn btn-matrix-outline btn-sm btn-speed active" data-speed="1">1x</button>
+                        <button class="btn btn-matrix-outline btn-sm btn-speed" data-speed="2">2x</button>
+                        <button class="btn btn-matrix-outline btn-sm btn-speed" data-speed="5">5x</button>
+                    </div>
+                </div>
+
+                <!-- Clean 2-Column Main Grid -->
+                <div class="matrix-main-grid">
+                    
+                    <!-- Left Column: Live SIEM Ingestion Stream -->
+                    <div class="matrix-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-list-ol"></i> SIEM INGESTION STREAM</h3>
+                            <span class="matrix-indicator active">LIVE</span>
+                        </div>
+                        <div class="card-body scrollable stream-feed" id="alert-feed-list">
+                            <!-- Items injected dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Agent Reasoning Graph & Agent Bus Terminal -->
+                    <div class="matrix-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-diagram-project"></i> REAL-TIME AGENT REASONING GRAPH</h3>
+                            <span class="matrix-pill">DYNAMIC TASK DECOMPOSITION</span>
+                        </div>
+                        <div class="card-body visualizer-layout">
+                            
+                            <!-- 8 Node Interactive Swarm Graph -->
+                            <div class="agent-swarm-map" id="agent-swarm-nodes">
+                                <svg class="swarm-svg-canvas" id="swarm-svg-connections"></svg>
+
+                                <div class="agent-node" data-agent="coordinator" style="top: 12%; left: 50%; transform: translateX(-50%);">
+                                    <div class="node-icon bg-matrix-green"><i class="fa-solid fa-sitemap"></i></div>
+                                    <div class="node-label">Coordinator</div>
+                                    <span class="node-status badge-matrix-green">Planning</span>
+                                </div>
+
+                                <div class="agent-node" data-agent="log" style="top: 42%; left: 12%;">
+                                    <div class="node-icon bg-matrix-cyan"><i class="fa-solid fa-list-check"></i></div>
+                                    <div class="node-label">Log Analysis</div>
+                                    <span class="node-status badge-matrix-cyan">Correlating</span>
+                                </div>
+
+                                <div class="agent-node" data-agent="threatintel" style="top: 42%; left: 37%;">
+                                    <div class="node-icon bg-matrix-purple"><i class="fa-solid fa-globe"></i></div>
+                                    <div class="node-label">Threat Intel</div>
+                                    <span class="node-status badge-matrix-purple">Enriching</span>
+                                </div>
+
+                                <div class="agent-node" data-agent="malware" style="top: 42%; left: 63%;">
+                                    <div class="node-icon bg-matrix-pink"><i class="fa-solid fa-bug"></i></div>
+                                    <div class="node-label">Malware Sandbox</div>
+                                    <span class="node-status badge-matrix-pink">Scanning</span>
+                                </div>
+
+                                <div class="agent-node" data-agent="cloud" style="top: 42%; left: 88%;">
+                                    <div class="node-icon bg-matrix-teal"><i class="fa-solid fa-cloud"></i></div>
+                                    <div class="node-label">Cloud Security</div>
+                                    <span class="node-status badge-matrix-teal">Auditing</span>
+                                </div>
+
+                                <div class="agent-node" data-agent="response" style="top: 75%; left: 25%;">
+                                    <div class="node-icon bg-matrix-red"><i class="fa-solid fa-bolt"></i></div>
+                                    <div class="node-label">Incident Response</div>
+                                    <span class="node-status badge-matrix-red">Executing</span>
+                                </div>
+
+                                <div class="agent-node" data-agent="compliance" style="top: 75%; left: 50%;">
+                                    <div class="node-icon bg-matrix-amber"><i class="fa-solid fa-scale-balanced"></i></div>
+                                    <div class="node-label">Compliance</div>
+                                    <span class="node-status badge-matrix-amber">Auditing</span>
+                                </div>
+
+                                <div class="agent-node" data-agent="approval" style="top: 75%; left: 75%;">
+                                    <div class="node-icon bg-matrix-green"><i class="fa-solid fa-user-shield"></i></div>
+                                    <div class="node-label">Human Approval</div>
+                                    <span class="node-status badge-matrix-green">Governing</span>
+                                </div>
+                            </div>
+
+                            <!-- Agent Inter-Communication Bus Terminal -->
+                            <div class="matrix-terminal">
+                                <div class="terminal-header">
+                                    <span>>_ AGENT INTER-COMMUNICATION BUS</span>
+                                    <span class="terminal-badge" id="terminal-step">Step 0/0</span>
+                                </div>
+                                <div class="terminal-body scrollable" id="agent-bus-logs">
+                                    <div class="log-line text-muted">[00:00:00] TUESDAY engine online. Listening on telemetry bus...</div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Unified Metrics Panel: Distribution | Consensus | IOC -->
+                <div class="matrix-card panel-split">
+                    <div class="panel-section">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-chart-pie"></i> INCIDENT DISTRIBUTION</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container" style="height:210px;">
+                                <canvas id="chart-incident-types"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel-section">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-gavel"></i> CONSENSUS & CONFIDENCE</h3>
+                        </div>
+                        <div class="card-body" id="consensus-panel">
+                            <div class="empty-state">Run an attack simulation to view agent consensus voting results and weighted confidence scores.</div>
+                        </div>
+                    </div>
+
+                    <div class="panel-section">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-magnifying-glass"></i> IOC LOOKUP</h3>
+                        </div>
+                        <div class="card-body">
+                            <input type="text" class="ioc-search-bar" id="ioc-search-input" placeholder="> Search IP / Hash / Domain...">
+                            <div id="ioc-search-results" style="margin-top:0.75rem;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Unified Intelligence Panel: Prediction | Playbook -->
+                <div class="matrix-card panel-split panel-split-2">
+                    <div class="panel-section">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-crystal-ball"></i> THREAT PREDICTION ENGINE</h3>
+                            <span class="matrix-pill">BONUS: AI-POWERED</span>
+                        </div>
+                        <div class="card-body" id="prediction-panel">
+                            <div class="empty-state">Predictions will appear after running an attack simulation.</div>
+                        </div>
+                    </div>
+
+                    <div class="panel-section">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-wand-magic-sparkles"></i> AUTONOMOUS PLAYBOOK GENERATOR</h3>
+                            <span class="matrix-pill">BONUS: SELF-LEARNING</span>
+                        </div>
+                        <div class="card-body" id="playbook-panel">
+                            <div class="empty-state">Playbooks are auto-generated from incident patterns and past episodic memory.</div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- ================= TAB 2: AGENT SWARM WORKSPACE ================= -->
+            <section id="tab-swarm" class="tab-content">
+                <div class="swarm-layout">
+                    <div class="agent-sidebar">
+                        <h3><i class="fa-solid fa-users"></i> SPECIALIZED AGENTS</h3>
+                        <div class="agent-nav-list" id="agent-selector-list">
+                            <!-- Injected by app.js -->
+                        </div>
+                    </div>
+                    <div class="agent-details-view" id="agent-details-panel">
+                        <!-- Injected by app.js -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= TAB 3: DIGITAL SOC TWIN & PCAP ================= -->
+            <section id="tab-twin" class="tab-content">
+                <div class="twin-layout">
+                    <div class="twin-header-bar">
+                        <div class="twin-title">
+                            <h2><i class="fa-solid fa-network-wired"></i> DIGITAL SOC TWIN & PCAP PACKET INSPECTOR</h2>
+                            <p>Real-time SOC topology showing host states, active network flows, isolated endpoints, and live Wireshark-style PCAP telemetry.</p>
+                        </div>
+                        <div class="twin-controls">
+                            <button class="btn btn-matrix-outline" id="btn-twin-reset-view"><i class="fa-solid fa-arrows-rotate"></i> Reset View</button>
+                            <button class="btn btn-matrix-red" id="btn-twin-isolate-all"><i class="fa-solid fa-lock"></i> Isolate Compromised Hosts</button>
+                        </div>
+                    </div>
+                    <div class="twin-canvas-container">
+                        <canvas id="digital-twin-canvas"></canvas>
+                        <div class="twin-node-overlay" id="twin-node-info-box">
+                            <div class="info-header">
+                                <span id="twin-info-name">Select an asset node...</span>
+                                <span class="badge badge-matrix-green" id="twin-info-type">-</span>
+                            </div>
+                            <div class="info-body" id="twin-info-body">
+                                Click on any node in the digital twin to inspect telemetry, process trees, and containment status.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live PCAP WireShark Packet Terminal -->
+                    <div class="matrix-card" style="margin-top:1rem;">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-ethernet"></i> LIVE PCAP WIRESHARK PACKET INSPECTOR</h3>
+                            <span class="matrix-indicator active">STREAMING</span>
+                        </div>
+                        <div class="card-body scrollable" style="max-height:220px; font-family:var(--font-mono); font-size:0.72rem;" id="pcap-packet-stream">
+                            <div class="empty-state">Run an attack simulation to capture live network packets.</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= TAB 4: MITRE ATT&CK + RCA + KILL CHAIN ================= -->
+            <section id="tab-mitre" class="tab-content">
+                <div class="matrix-card" style="margin-bottom:1.25rem;">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-cubes"></i> MITRE ATT&CK THREAT HEATMAP (CLICK TTP FOR DETAILS)</h3>
+                        <span class="matrix-pill red" id="mitre-active-ttp-count">0 Active TTPs</span>
+                    </div>
+                    <div class="card-body scrollable">
+                        <div class="mitre-grid" id="mitre-matrix-container">
+                            <!-- Injected by mitre.js -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="matrix-main-grid" style="grid-template-columns: 1fr 1fr;">
+                    <!-- Root Cause Analysis Timeline -->
+                    <div class="matrix-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-timeline"></i> ROOT CAUSE ANALYSIS TIMELINE</h3>
+                        </div>
+                        <div class="card-body scrollable" id="rca-timeline-container">
+                            <div class="empty-state">No active incident under root cause analysis.</div>
+                        </div>
+                    </div>
+
+                    <!-- Kill Chain Attack Progression Stepper -->
+                    <div class="matrix-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-diagram-successor"></i> KILL CHAIN ATTACK PROGRESSION</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="killchain-stepper" id="killchain-stepper">
+                                <div class="kc-step" data-kc="Initial Access">1. Initial Access</div>
+                                <div class="kc-step" data-kc="Execution">2. Execution</div>
+                                <div class="kc-step" data-kc="Persistence">3. Persistence</div>
+                                <div class="kc-step" data-kc="Defense Evasion">4. Defense Evasion</div>
+                                <div class="kc-step" data-kc="Credential Access">5. Credential Access</div>
+                                <div class="kc-step" data-kc="Lateral Movement">6. Lateral Move</div>
+                                <div class="kc-step" data-kc="Exfiltration / Impact">7. Impact / Exfil</div>
+                            </div>
+                            <div class="kc-details" id="killchain-details-box" style="margin-top:1rem; font-size:0.8rem; color:var(--text-muted);">
+                                Select a kill chain stage to see detected attack progression.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= TAB 5: HUMAN APPROVAL & GOVERNANCE ================= -->
+            <section id="tab-approval" class="tab-content">
+                <div class="matrix-main-grid">
+                    <div class="matrix-card col-8">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-shield-halved"></i> HIGH-IMPACT ACTION APPROVAL QUEUE</h3>
+                            <span class="matrix-pill amber">Human-in-the-Loop Safety Gate</span>
+                        </div>
+                        <div class="card-body scrollable" id="approval-queue-list">
+                            <!-- Dynamic approval requests -->
+                        </div>
+                    </div>
+
+                    <div class="matrix-card col-4">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-sliders"></i> POLICY CONTROLS</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="control-group">
+                                <label>AUTONOMOUS EXECUTION THRESHOLD</label>
+                                <input type="range" id="slider-auto-threshold" min="50" max="95" value="80" class="slider">
+                                <span class="range-val" id="val-auto-threshold">Risk &lt; 80/100 (Auto Execute)</span>
+                            </div>
+                            <div class="divider"></div>
+                            <h4>AUDIT TRAIL LOG</h4>
+                            <div class="audit-log-box scrollable" id="audit-log-container">
+                                <!-- Audit logs -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= TAB 6: AGENT MEMORY & RULE EDITOR ================= -->
+            <section id="tab-memory" class="tab-content">
+                <div class="matrix-main-grid">
+                    <div class="matrix-card col-4">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-brain"></i> MEMORY TIERS & SANDBOX</h3>
+                        </div>
+                        <div class="card-body">
+                            <ul class="memory-nav">
+                                <li class="memory-tab active" data-mem="episodic"><i class="fa-solid fa-clock-rotate-left"></i> Episodic Memory (Incidents)</li>
+                                <li class="memory-tab" data-mem="semantic"><i class="fa-solid fa-network-wired"></i> Semantic Memory (Asset Graph)</li>
+                                <li class="memory-tab" data-mem="rules"><i class="fa-solid fa-code"></i> YARA & Sigma Rules</li>
+                                <li class="memory-tab" data-mem="editor"><i class="fa-solid fa-pen-to-square"></i> Live Rule Sandbox Editor</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="matrix-card col-8">
+                        <div class="card-header" id="memory-view-header">
+                            <h3><i class="fa-solid fa-clock-rotate-left"></i> Episodic Memory Store</h3>
+                            <span class="matrix-pill" id="memory-count-badge">5 Incident Memories</span>
+                        </div>
+                        <div class="card-body scrollable" id="memory-view-body">
+                            <!-- Injected via memory.js / app.js -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= TAB 7: PURPLE TEAM SIMULATOR ================= -->
+            <section id="tab-simulator" class="tab-content">
+                <div class="matrix-main-grid">
+                    <div class="matrix-card col-6">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-vial"></i> PRE-CONFIGURED ATTACK SCENARIOS</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="scenario-card" data-scenario="ransomware">
+                                <div class="scenario-header">
+                                    <h4><i class="fa-solid fa-biohazard text-red"></i> LockBit 3.0 Ransomware Outbreak</h4>
+                                    <span class="badge badge-matrix-red">CRITICAL</span>
+                                </div>
+                                <p>Spearphishing payload execution -&gt; LSASS Memory Dumping -&gt; Volume Shadow Copy Deletion -&gt; AES File Encryption.</p>
+                                <button class="btn btn-matrix-red btn-sm btn-run-scenario" data-scenario="ransomware">
+                                    <i class="fa-solid fa-play"></i> EXECUTE SCENARIO
+                                </button>
+                            </div>
+
+                            <div class="scenario-card" data-scenario="cloud_exfil">
+                                <div class="scenario-header">
+                                    <h4><i class="fa-solid fa-cloud-arrow-down text-amber"></i> AWS S3 Exfiltration via Compromised IAM</h4>
+                                    <span class="badge badge-matrix-amber">HIGH</span>
+                                </div>
+                                <p>Leaked access key -&gt; STS AssumeRole -&gt; S3 ListBuckets -&gt; Bulk KMS Data Downloading.</p>
+                                <button class="btn btn-matrix-outline btn-sm btn-run-scenario" data-scenario="cloud_exfil">
+                                    <i class="fa-solid fa-play"></i> EXECUTE SCENARIO
+                                </button>
+                            </div>
+
+                            <div class="scenario-card" data-scenario="apt_supply_chain">
+                                <div class="scenario-header">
+                                    <h4><i class="fa-solid fa-cube text-bright-green"></i> APT Supply Chain Trojan (SUNBURST Variant)</h4>
+                                    <span class="badge badge-matrix-red">CRITICAL</span>
+                                </div>
+                                <p>Trojanized DLL update -&gt; Domain Controller Authentication -&gt; DNS Tunneling C2 Beaconing.</p>
+                                <button class="btn btn-matrix-red btn-sm btn-run-scenario" data-scenario="apt_supply_chain">
+                                    <i class="fa-solid fa-play"></i> EXECUTE SCENARIO
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="matrix-card col-6">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-terminal"></i> SYNTHETIC ALERT INJECTOR</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="form-custom-alert">
+                                <div class="form-group">
+                                    <label>ALERT SOURCE ENCLAVE</label>
+                                    <select id="alert-source" class="form-control">
+                                        <option value="CrowdStrike EDR">CrowdStrike EDR (Endpoint)</option>
+                                        <option value="AWS GuardDuty">AWS GuardDuty (Cloud)</option>
+                                        <option value="Palo Alto Firewall">Palo Alto NextGen Firewall (Network)</option>
+                                        <option value="Microsoft Entra ID">Microsoft Entra ID (Identity)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>TARGET ASSET / IP</label>
+                                    <input type="text" id="alert-target" class="form-control" value="FIN-SERVER-04 (192.168.10.45)">
+                                </div>
+                                <div class="form-group">
+                                    <label>DETECTED SUSPICIOUS INDICATOR (IOC)</label>
+                                    <input type="text" id="alert-ioc" class="form-control" value="185.220.101.5 (Tor Exit Node / C2)">
+                                </div>
+                                <div class="form-group">
+                                    <label>RAW EVENT PAYLOAD LOG</label>
+                                    <textarea id="alert-payload" class="form-control" rows="4">Process powershell.exe spawned encoded command: powershell -enc SQBFAFgAKABOAGUAdw... connecting to 185.220.101.5:443</textarea>
+                                </div>
+                                <button type="submit" class="btn btn-matrix-green btn-block">
+                                    <i class="fa-solid fa-paper-plane"></i> INJECT INTO AGENT SWARM
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Executive Report Modal -->
+    <div class="modal-overlay" id="modal-report">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-file-code text-bright-green"></i> EXECUTIVE INCIDENT INVESTIGATION REPORT</h3>
+                <button class="modal-close" id="btn-close-report">&times;</button>
+            </div>
+            <div class="modal-body scrollable" id="report-modal-body">
+                <!-- Injected via app.js -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-matrix-outline" id="btn-print-report"><i class="fa-solid fa-print"></i> PRINT / PDF</button>
+                <button class="btn btn-matrix-green" id="btn-download-md"><i class="fa-solid fa-download"></i> DOWNLOAD MARKDOWN</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="tools.js"></script>
+    <script src="memory.js"></script>
+    <script src="mitre.js"></script>
+    <script src="network_vis.js"></script>
+    <script src="agents.js"></script>
+    <script src="attack_sim.js"></script>
+    <script src="app.js"></script>
+    <script src="showcase.js"></script>
+
+</body>
+</html>

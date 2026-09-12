@@ -1,0 +1,14 @@
+{
+  "port": 8090,
+  "ollamaUrl": "http://localhost:11434",
+  "model": "qwen2.5:7b",
+  "fallbackModel": "phi4-mini",
+  "maxTokens": 900,
+  "timeoutMs": 120000,
+  "numCtx": 8192,
+  "temperature": 0.2,
+  "maxTurns": 4,
+  "rulesDelayMs": 150,
+  "autoApprovalThreshold": 80,
+  "maxParallelAgents": 4
+}
