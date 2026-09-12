@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# Store temp writes (the store saves via a .tmp rename)
+data/*.tmp
+
+# Logs & OS noise
+*.log
+.DS_Store
+Thumbs.db
+
+# Office temp/lock files
+~$*
