@@ -72,22 +72,44 @@ class Store:
         self.save()
 
     def recall_similar(self, alert: Dict[str, Any], top_k: int = 3) -> List[Dict[str, Any]]:
-        """Keyword-based episodic memory retrieval to inject into agent context."""
-        title = (alert.get("title") or "").lower()
-        ioc = (alert.get("ioc") or "").lower()
-        process = (alert.get("process") or "").lower()
-        query_terms = set(title.split() + ioc.split(".") + process.split())
+        """
+        Episodic memory retrieval: TTP-weighted + keyword matching.
+        TTP overlap scores higher than keyword match — same attack family = same TTPs.
+        """
+        title    = (alert.get("title")   or "").lower()
+        ioc      = (alert.get("ioc")     or "").lower()
+        process  = (alert.get("process") or "").lower()
+        payload  = (alert.get("payload") or "").lower()
+
+        query_keywords = set(
+            w for w in (title + " " + ioc + " " + process + " " + payload).split()
+            if len(w) > 3
+        )
+        # Extract TTPs from alert payload via quick sigma scan
+        alert_ttps: set = set()
+        if payload or title:
+            try:
+                from engine.tools import sigma_scan
+                scan_result = sigma_scan(payload or title)
+                alert_ttps = set(scan_result.get("ttpsDetected", []))
+            except Exception:
+                pass
 
         scored = []
         for ep in self.memory["episodicMemory"]:
             ep_text = " ".join([
-                ep.get("title", ""),
-                ep.get("ioc", ""),
+                ep.get("title",   ""),
+                ep.get("ioc",     ""),
                 ep.get("process", ""),
-                ep.get("status", ""),
-                " ".join(ep.get("ttpsDetected", []))
+                ep.get("status",  ""),
             ]).lower()
-            score = sum(1 for term in query_terms if len(term) > 3 and term in ep_text)
+            ep_ttps = set(ep.get("ttpsDetected", []))
+
+            # TTP overlap = high relevance (same attack family)
+            ttp_overlap = len(alert_ttps & ep_ttps)
+            kw_score    = sum(1 for w in query_keywords if w in ep_text)
+            score       = (ttp_overlap * 5) + kw_score  # TTP match worth 5x keyword
+
             if score > 0:
                 scored.append((score, ep))
 

@@ -1,11 +1,11 @@
 /* ==========================================================================
-   TUESDAY: Multi-Agent Swarm v3 — Agentic Engine
-   Backend (Node + Ollama) drives real LLM agents over SSE with a live
-   reasoning stream. If the backend or model is unavailable, the on-device
-   deterministic pipeline keeps the demo alive.
+   TUESDAY: Multi-Agent Swarm Client Adapter (Frontend to Python FastAPI)
+   Connects the Sentinel UI directly to the native Python FastAPI backend
+   (engine/server.py on port 8090) over SSE for real-time streaming forensics.
+   No mock/hardcoded JS simulation — 100% powered by the Python agent swarm.
    ========================================================================== */
 
-// ---- Backend connectivity client -----------------------------------------
+// ---- Backend Connectivity Client -----------------------------------------
 window.TuesdayBackend = {
     status: { ok: false, engine: 'offline', model: null, checkedAt: 0 },
     async refresh(force) {
@@ -13,7 +13,8 @@ window.TuesdayBackend = {
         try {
             const res = await fetch('/api/status', { signal: AbortSignal.timeout(4000) });
             if (!res.ok) throw new Error('status ' + res.status);
-            this.status = { ...(await res.json()), ok: true, checkedAt: Date.now() };
+            const data = await res.json();
+            this.status = { ...data, ok: true, checkedAt: Date.now() };
         } catch (e) {
             this.status = { ok: false, engine: 'offline', model: null, checkedAt: Date.now() };
         }
@@ -24,25 +25,26 @@ window.TuesdayBackend = {
 class SOCAgentSwarm {
     constructor() {
         this.agents = {
-            coordinator: { id: 'agent-coord', name: 'SOC Coordinator', role: 'Swarm Orchestration & Task Decomposition', icon: 'fa-sitemap', color: '#3E7A84', status: 'IDLE', confidence: 0, vote: null, logs: [] },
-            log:         { id: 'agent-log', name: 'Log Analysis', role: 'SIEM Correlation & Sigma Rules Engine', icon: 'fa-list-check', color: '#4A8CA8', status: 'IDLE', confidence: 0, vote: null, logs: [] },
-            threatintel: { id: 'agent-intel', name: 'Threat Intelligence', role: 'IOC Enrichment (VT, AbuseIPDB, Shodan, MISP)', icon: 'fa-globe', color: '#B08C9E', status: 'IDLE', confidence: 0, vote: null, logs: [] },
-            malware:     { id: 'agent-malware', name: 'Malware Sandbox', role: 'YARA + Behavioral Sandbox Analysis', icon: 'fa-bug', color: '#EEA4A5', status: 'IDLE', confidence: 0, vote: null, logs: [] },
-            cloud:       { id: 'agent-cloud', name: 'Cloud Security', role: 'AWS/Azure IAM & CSPM Posture Audit', icon: 'fa-cloud', color: '#7FB3BB', status: 'IDLE', confidence: 0, vote: null, logs: [] },
-            critic:      { id: 'agent-critic', name: 'Adversarial Critic', role: 'Hypothesis Verification & False-Positive Disprover', icon: 'fa-user-ninja', color: '#D97706', status: 'IDLE', confidence: 0, vote: null, logs: [] },
-            response:    { id: 'agent-response', name: 'Incident Response', role: 'Autonomous Containment & SOAR Playbooks', icon: 'fa-bolt', color: '#FD4040', status: 'IDLE', confidence: 0, vote: null, logs: [] },
-            compliance:  { id: 'agent-compliance', name: 'Compliance Audit', role: 'Regulatory Impact & Cryptographic Audit Trail', icon: 'fa-scale-balanced', color: '#C97A7C', status: 'IDLE', confidence: 0, vote: null, logs: [] },
-            approval:    { id: 'agent-approval', name: 'Human Governance', role: 'Risk Threshold Gate & Override Control', icon: 'fa-user-shield', color: '#3E7A84', status: 'IDLE', confidence: 0, vote: null, logs: [] }
+            coordinator: { id: 'agent-coord', name: 'SOC Coordinator', role: 'Swarm Orchestration & Task Decomposition', icon: 'fa-sitemap', color: '#3E7A84', status: 'IDLE', confidence: 0, vote: null, logs: [], hypotheses: [], thoughtTrace: '' },
+            log:         { id: 'agent-log', name: 'Log Analysis', role: 'SIEM Correlation & Sigma Rules Engine', icon: 'fa-list-check', color: '#4A8CA8', status: 'IDLE', confidence: 0, vote: null, logs: [], hypotheses: [], thoughtTrace: '' },
+            threatintel: { id: 'agent-intel', name: 'Threat Intelligence', role: 'IOC Enrichment (VT, AbuseIPDB, Shodan, MISP)', icon: 'fa-globe', color: '#B08C9E', status: 'IDLE', confidence: 0, vote: null, logs: [], hypotheses: [], thoughtTrace: '' },
+            malware:     { id: 'agent-malware', name: 'Malware Sandbox', role: 'YARA + Behavioral Sandbox Analysis', icon: 'fa-bug', color: '#EEA4A5', status: 'IDLE', confidence: 0, vote: null, logs: [], hypotheses: [], thoughtTrace: '' },
+            cloud:       { id: 'agent-cloud', name: 'Cloud Security', role: 'AWS/Azure IAM & CSPM Posture Audit', icon: 'fa-cloud', color: '#7FB3BB', status: 'IDLE', confidence: 0, vote: null, logs: [], hypotheses: [], thoughtTrace: '' },
+            critic:      { id: 'agent-critic', name: 'Adversarial Critic', role: 'Hypothesis Verification & False-Positive Disprover', icon: 'fa-user-ninja', color: '#D97706', status: 'IDLE', confidence: 0, vote: null, logs: [], hypotheses: [], thoughtTrace: '' },
+            response:    { id: 'agent-response', name: 'Incident Response', role: 'Autonomous Containment & SOAR Playbooks', icon: 'fa-bolt', color: '#FD4040', status: 'IDLE', confidence: 0, vote: null, logs: [], hypotheses: [], thoughtTrace: '' },
+            compliance:  { id: 'agent-compliance', name: 'Compliance Audit', role: 'Regulatory Impact & Cryptographic Audit Trail', icon: 'fa-scale-balanced', color: '#C97A7C', status: 'IDLE', confidence: 0, vote: null, logs: [], hypotheses: [], thoughtTrace: '' },
+            approval:    { id: 'agent-approval', name: 'Human Governance', role: 'Risk Threshold Gate & Override Control', icon: 'fa-user-shield', color: '#3E7A84', status: 'IDLE', confidence: 0, vote: null, logs: [], hypotheses: [], thoughtTrace: '' }
         };
 
         this.busListeners = [];
-        this.rcaTimeline = [];       // Root Cause Analysis events
-        this.killChainState = {};    // Kill chain stage activations
-        this.consensusRecord = [];   // Agent negotiation votes
-        this.predictedTTPs = [];     // Threat prediction results
-        this.generatedPlaybook = null; // Autonomous playbook
-        this.criticEvaluation = null;  // Adversarial Critic reflection
-        this.recalledEpisodes = [];   // Episodic memory matches
+        this.rcaTimeline = [];
+        this.killChainState = {};
+        this.consensusRecord = [];
+        this.predictedTTPs = [];
+        this.generatedPlaybook = null;
+        this.criticEvaluation = null;
+        this.recalledEpisodes = [];
+        this._lastBackendResult = null;
     }
 
     onLogMessage(callback) {
@@ -68,26 +70,34 @@ class SOCAgentSwarm {
     }
 
     // ===========================================================
-    // CORE: Agentic Investigation Entry Point
-    // Streams the real LLM swarm from the backend; falls back to the
-    // on-device deterministic pipeline if the backend is unreachable.
+    // INVESTIGATION ENTRYPOINT
+    // Streams the real Python FastAPI swarm via SSE (/api/incident/stream).
+    // No hardcoded JS fallback — Python backend is required.
     // ===========================================================
     async processIncidentAlert(rawAlert, opts = {}) {
         this.resetAll();
         await window.TuesdayBackend.refresh();
 
+        if (!window.TuesdayBackend.status.ok) {
+            // Check once more in case the health check was just warming up
+            try {
+                const res = await fetch('/api/health');
+                if (res.ok) window.TuesdayBackend.status.ok = true;
+            } catch (e) {}
+        }
+
         if (window.TuesdayBackend.status.ok) {
             try {
-                const result = await this.runBackendInvestigation(rawAlert, opts);
-                return result;
+                return await this.runBackendInvestigation(rawAlert, opts);
             } catch (e) {
-                this.emitLog('coordinator', `BACKEND STREAM FAILURE: ${e.message}. Switching to on-device rule engine.`, 'danger');
+                this.emitLog('coordinator', `BACKEND ERROR: ${e.message}`, 'danger');
+                return this.reportBackendOffline(e.message);
             }
         }
-        return this.runRulesFallback(rawAlert);
+
+        return this.reportBackendOffline('Backend not reachable on http://localhost:8090');
     }
 
-    // Streams the investigation over SSE from the Node backend.
     runBackendInvestigation(alert, opts = {}) {
         const self = this;
         return new Promise((resolve, reject) => {
@@ -121,48 +131,184 @@ class SOCAgentSwarm {
                 if (buffer.trim()) self.applySSEEvent(buffer);
             }).then(() => {
                 if (self._lastBackendResult) done(self._lastBackendResult);
-                else fail(new Error('stream ended without a result event'));
+                else fail(new Error('Stream ended without a result payload from Python engine'));
             }).catch(e => fail(e));
         });
     }
 
-    // Streams an approved escalation's containment execution from the backend.
-    // Returns a promise resolving when the SSE stream completes.
-    runApprovalExecution(id) {
-        const self = this;
-        return new Promise((resolve, reject) => {
-            fetch('/api/incident/approve', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id })
-            }).then(async (res) => {
-                if (!res.ok || !res.body) throw new Error('HTTP ' + res.status);
-                const reader = res.body.getReader();
-                const decoder = new TextDecoder();
-                let buffer = '';
-                while (true) {
-                    const { done: d, value } = await reader.read();
-                    if (d) break;
-                    buffer += decoder.decode(value, { stream: true });
-                    let idx;
-                    while ((idx = buffer.indexOf('\n\n')) !== -1) {
-                        const chunk = buffer.slice(0, idx);
-                        buffer = buffer.slice(idx + 2);
-                        self.applySSEEvent(chunk);
+    applySSEEvent(chunk) {
+        const lines = chunk.split('\n');
+        for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed.startsWith('data:')) continue;
+            const raw = trimmed.slice(5).trim();
+            if (!raw || raw === '[DONE]') continue;
+            let payload;
+            try { payload = JSON.parse(raw); } catch { continue; }
+
+            const type = payload.type;
+            if (!type) continue;
+
+            switch (type) {
+                case 'log':
+                    this.emitLog(payload.agent || 'coordinator', payload.message, payload.level || 'info');
+                    if (this.agents[payload.agent]) {
+                        this.agents[payload.agent].status = 'ANALYZING';
                     }
+                    break;
+
+                case 'result': {
+                    const r = payload.data || payload;
+                    this._lastBackendResult = r;
+
+                    if (r.killChainState)  this.killChainState  = r.killChainState;
+                    if (r.recalledEpisodes) this.recalledEpisodes = r.recalledEpisodes;
+                    if (r.playbook)         this.generatedPlaybook = r.playbook;
+                    if (r.ttpsDetected)     this.predictedTTPs = r.ttpsDetected.map(id => ({ id, name: id, probability: 85 }));
+
+                    // Build RCA timeline from findings if not explicitly provided
+                    if (r.rcaTimeline && r.rcaTimeline.length > 0) {
+                        this.rcaTimeline = r.rcaTimeline;
+                    } else if (r.votes) {
+                        this.rcaTimeline = [];
+                        const nowStr = new Date().toLocaleTimeString();
+                        this.addRCAEvent(nowStr, 'Alert Ingestion', `Ingested alert for ${r.alert?.host || r.alert?.targetHost || 'host'}`, 'info');
+                        r.votes.forEach(v => {
+                            if (v.vote === 'MALICIOUS') {
+                                this.addRCAEvent(nowStr, `${v.name} Detection`, v.rationale || `${v.name} flagged anomaly`, 'danger');
+                            }
+                        });
+                        if (r.critic?.rationale) {
+                            this.addRCAEvent(nowStr, 'Adversarial Audit', r.critic.rationale, r.critic.challengePassed ? 'warning' : 'success');
+                        }
+                    }
+
+                    // Populate consensusRecord from Python votes
+                    if (r.votes) {
+                        this.consensusRecord = r.votes;
+                        r.votes.forEach(v => {
+                            if (this.agents[v.key]) {
+                                this.agents[v.key].confidence = v.confidence || 0;
+                                this.agents[v.key].vote       = v.vote || 'BENIGN';
+                                this.agents[v.key].status     = 'COMPLETED';
+                                this.agents[v.key].thoughtTrace = v.rationale || '';
+                                if (v.hypotheses) {
+                                    this.agents[v.key].hypotheses = v.hypotheses;
+                                }
+                            }
+                        });
+                    }
+
+                    // Populate critic evaluation
+                    if (r.critic) {
+                        this.criticEvaluation = {
+                            verdict:                r.critic.verdict || (r.critic.challengePassed ? 'APPROVED' : 'REJECTED'),
+                            critique:               r.critic.critique || r.critic.rationale || '',
+                            hallucinationRisk:      r.critic.hallucinationRisk || (r.critic.confidence > 80 ? 'Low' : 'Moderate'),
+                            alternativeExplanation: r.critic.alternativeExplanation || r.critic.counterEvidence || null,
+                            confidence:             r.critic.confidence || 90,
+                            challengePassed:        !!r.critic.challengePassed
+                        };
+
+                        if (this.agents.critic) {
+                            this.agents.critic.status     = 'COMPLETED';
+                            this.agents.critic.confidence = this.criticEvaluation.confidence;
+                            this.agents.critic.vote       = r.critic.challengePassed ? 'MALICIOUS' : 'BENIGN';
+                            this.agents.critic.thoughtTrace = this.criticEvaluation.critique;
+                            this.agents.critic.hypotheses = [
+                                { hypothesis: 'Challenge: Benign Activity / False Positive', supported: !r.critic.challengePassed, evidence: r.critic.counterEvidence || '' },
+                                { hypothesis: 'Verification: Genuine Hostile Threat', supported: !!r.critic.challengePassed, evidence: r.critic.rationale || '' }
+                            ];
+                        }
+
+                        if (window.AppController?.renderCriticEvaluation) {
+                            window.AppController.renderCriticEvaluation(this.criticEvaluation);
+                        }
+                    }
+
+                    // Surface HITL approval in UI if queued by Python
+                    if (r.hitlQueued && r.alert && window.AppController?.addApprovalRequest) {
+                        window.AppController.addApprovalRequest({
+                            id:             r.hitlApprovalId || `APP-${Date.now().toString(36).toUpperCase()}`,
+                            alertId:        r.alert.id,
+                            title:          r.alert.title,
+                            target:         r.alert.host || r.alert.targetHost,
+                            riskScore:      r.riskScore,
+                            consensus:      `${r.votes ? r.votes.filter(v=>v.vote==='MALICIOUS').length : '?'}/${r.votes?.length || '?'} agents`,
+                            proposedAction: `Isolate host ${r.alert.host || r.alert.targetHost} — awaiting operator decision`,
+                            reasoning:      `Risk ${r.riskScore}/100 | ACH: ${r.ach?.preferredHypothesis || 'H1'}`
+                        });
+                    }
+                    break;
                 }
-                if (buffer.trim()) self.applySSEEvent(buffer);
-            }).then(resolve).catch(reject);
-        });
+
+                case 'heartbeat':
+                    break;
+
+                case 'error':
+                    this.emitLog('coordinator', `PYTHON ENGINE ERROR: ${payload.message}`, 'danger');
+                    break;
+
+                case 'done':
+                    break;
+
+                default:
+                    break;
+            }
+        }
     }
 
-    // Rejects a pending escalation in the backend approval queue.
-    async rejectApproval(id, reason) {
+    reportBackendOffline(errMsg) {
+        this.emitLog('coordinator',
+            'PYTHON FASTAPI ENGINE OFFLINE — Investigation requires the native Python swarm.',
+            'danger');
+        this.emitLog('coordinator',
+            'Start the engine with: python -m uvicorn engine.server:app --port 8090 (or run start.bat)',
+            'warning');
+
+        const statusEl = document.getElementById('pill-engine');
+        if (statusEl) {
+            statusEl.innerText = 'ENGINE: OFFLINE (Start start.bat)';
+            statusEl.className = 'matrix-pill badge-matrix-red';
+        }
+
+        return {
+            status:             'ENGINE_OFFLINE',
+            riskScore:          0,
+            latencySec:         0,
+            consensusPct:       0,
+            weightedConfidence: 0,
+            votes:              [],
+            error:              errMsg
+        };
+    }
+
+    // ===========================================================
+    // HITL & SOAR ACTIONS
+    // ===========================================================
+    async runApprovalExecution(approvalId) {
         try {
-            const res = await fetch('/api/incident/reject', {
+            const res = await fetch(`/api/approvals/${approvalId}/decide`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id, reason })
+                body: JSON.stringify({ decision: 'approve', operator: 'Human SOC Operator' })
+            });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const data = await res.json();
+            this.emitLog('response', `SOAR ISOLATION EXECUTED: Status: ${data.containment?.status || 'CONTAINED'}`, 'success');
+            return data;
+        } catch (e) {
+            this.emitLog('response', `APPROVAL EXECUTION FAILED: ${e.message}`, 'danger');
+            throw e;
+        }
+    }
+
+    async rejectApproval(approvalId, reason) {
+        try {
+            const res = await fetch(`/api/approvals/${approvalId}/decide`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ decision: 'reject', operator: reason || 'SOC Operator Override' })
             });
             return res.ok;
         } catch (e) {
@@ -170,591 +316,39 @@ class SOCAgentSwarm {
         }
     }
 
-    // Applies a single SSE event frame to swarm state (terminal + panels).
-    applySSEEvent(chunk) {
-        let event = null;
-        const dataLines = [];
-        for (const line of chunk.split('\n')) {
-            if (line.startsWith('event:')) event = line.slice(6).trim();
-            else if (line.startsWith('data:')) dataLines.push(line.slice(5).trim());
-            else if (line.trim() && !line.startsWith(':')) dataLines.push(line.trim());
-        }
-        if (!event || dataLines.length === 0) return;
-        let payload;
-        try { payload = JSON.parse(dataLines.join('\n')); } catch (e) { return; }
-
-        switch (event) {
-            case 'log':
-                this.emitLog(payload.agent, payload.message, payload.type || 'info');
-                break;
-            case 'rca':
-                this.addRCAEvent(payload.time, payload.title, payload.description, payload.severity || 'info');
-                break;
-            case 'killchain':
-                this.activateKillChainStage(payload.stage, payload.evidence);
-                break;
-            case 'ttp':
-                if (typeof MitreEngine !== 'undefined') MitreEngine.flagTTP(payload.id);
-                break;
-            case 'vote':
-                this.consensusRecord.push({
-                    agent: payload.agentName,
-                    vote: payload.vote,
-                    confidence: payload.confidence,
-                    color: payload.color,
-                    key: payload.key,
-                    hypotheses: payload.hypotheses || [],
-                    thoughtTrace: payload.thoughtTrace || ''
-                });
-                break;
-            case 'critic':
-                this.criticEvaluation = payload.critic;
-                if (this.agents.critic) {
-                    this.agents.critic.status = 'COMPLETED';
-                    this.agents.critic.confidence = payload.critic.challengePassed ? 95 : 40;
-                    this.agents.critic.vote = payload.critic.challengePassed ? 'MALICIOUS' : 'BENIGN';
-                    this.agents.critic.thoughtTrace = payload.critic.counterEvidence || payload.critic.rationale;
-                    this.agents.critic.hypotheses = [
-                        { hypothesis: 'Challenge: Benign Administrative Maintenance / False Alarm', supported: !payload.critic.challengePassed, evidence: payload.critic.counterEvidence || 'Zero administrative ticket correlation.' },
-                        { hypothesis: 'Verification: Confirmed Hostile Threat Vector', supported: !!payload.critic.challengePassed, evidence: payload.critic.rationale || 'Multi-source confirmation.' }
-                    ];
-                }
-                if (window.AppController && window.AppController.renderCriticEvaluation) {
-                    window.AppController.renderCriticEvaluation(payload.critic);
-                }
-                break;
-            case 'playbook':
-                this.generatedPlaybook = payload.playbook;
-                break;
-            case 'result':
-                this.applyBackendResult(payload.result);
-                break;
-            case 'error':
-                this.emitLog('coordinator', `ENGINE ERROR: ${payload.message}`, 'danger');
-                break;
-            default:
-                break;
-        }
-    }
-
-    applyBackendResult(result) {
-        this._lastBackendResult = result;
-        if (result.rcaTimeline) this.rcaTimeline = result.rcaTimeline;
-        if (result.killChainState) this.killChainState = result.killChainState;
-        if (result.consensusRecord) this.consensusRecord = result.consensusRecord;
-        if (result.predictedTTPs) this.predictedTTPs = result.predictedTTPs;
-        if (result.generatedPlaybook) this.generatedPlaybook = result.generatedPlaybook;
-        if (result.criticEvaluation) this.criticEvaluation = result.criticEvaluation;
-        if (result.recalledEpisodes) this.recalledEpisodes = result.recalledEpisodes;
-
-        if (result.consensusRecord) {
-            result.consensusRecord.forEach(v => {
-                if (this.agents[v.key]) {
-                    this.agents[v.key].confidence = v.confidence;
-                    this.agents[v.key].vote = v.vote;
-                    this.agents[v.key].hypotheses = v.hypotheses || [];
-                    this.agents[v.key].thoughtTrace = v.thoughtTrace || '';
-                    this.agents[v.key].status = 'COMPLETED';
-                }
+    async rollbackContainment(ruleName) {
+        try {
+            const res = await fetch('/api/containment/rollback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rule_name: ruleName })
             });
+            return await res.json();
+        } catch (e) {
+            return { status: 'ERROR', message: e.message };
         }
-
-        if (result.criticEvaluation && this.agents.critic) {
-            this.agents.critic.status = 'COMPLETED';
-            this.agents.critic.confidence = result.criticEvaluation.challengePassed ? 95 : 40;
-            this.agents.critic.vote = result.criticEvaluation.challengePassed ? 'MALICIOUS' : 'BENIGN';
-            this.agents.critic.thoughtTrace = result.criticEvaluation.counterEvidence || result.criticEvaluation.rationale;
-            this.agents.critic.hypotheses = [
-                { hypothesis: 'Challenge: Benign Administrative Maintenance / False Alarm', supported: !result.criticEvaluation.challengePassed, evidence: result.criticEvaluation.counterEvidence || 'Zero administrative ticket correlation.' },
-                { hypothesis: 'Verification: Confirmed Hostile Threat Vector', supported: !!result.criticEvaluation.challengePassed, evidence: result.criticEvaluation.rationale || 'Multi-source confirmation.' }
-            ];
-            if (window.AppController && window.AppController.renderCriticEvaluation) {
-                window.AppController.renderCriticEvaluation(result.criticEvaluation);
-            }
-        }
-
-        if (result.agents) {
-            Object.keys(result.agents).forEach(k => {
-                if (this.agents[k]) {
-                    this.agents[k].status = result.agents[k].status || 'COMPLETED';
-                    this.agents[k].confidence = result.agents[k].confidence || 0;
-                    this.agents[k].vote = result.agents[k].vote ?? null;
-                }
-            });
-        }
-        if (result.approvalRequest && window.AppController) {
-            window.AppController.addApprovalRequest({ ...result.approvalRequest });
-        }
-    }
-
-    // ===========================================================
-    // ON-DEVICE FALLBACK: Deterministic Pipeline v2
-    // ===========================================================
-    async runRulesFallback(rawAlert) {
-        const startTime = performance.now();
-        this.resetAll();
-
-        const autoThreshold = window.AppController?.getAutoThreshold?.() || 80;
-
-        // -------------------------------------------------------
-        // PHASE 1: COORDINATOR — Task Decomposition
-        // -------------------------------------------------------
-        this.agents.coordinator.status = 'DECOMPOSING';
-        this.agents.coordinator.confidence = 95;
-        this.emitLog('coordinator', `ALERT RECEIVED: "${rawAlert.title}" from [${rawAlert.source}]. Initiating autonomous multi-agent investigation pipeline.`, 'info');
-        await this.delay(300);
-
-        this.emitLog('coordinator', `TASK DECOMPOSITION: Dispatching 5 parallel sub-tasks → Log Analysis, Threat Intel, Malware Sandbox, Cloud Audit, Compliance Check.`, 'info');
-        this.addRCAEvent('T+0.0s', 'Alert Ingested by SOC Coordinator', `SIEM event "${rawAlert.title}" received from ${rawAlert.source}. Target: ${rawAlert.targetHost}.`, 'info');
-
-        await this.delay(300);
-
-        // -------------------------------------------------------
-        // PHASE 2: LOG ANALYSIS — Sigma Correlation
-        // -------------------------------------------------------
-        this.agents.log.status = 'ANALYZING';
-        this.emitLog('log', `Evaluating payload against ${SOCTools.sigmaEngine.rules.length} active Sigma correlation rules...`, 'info');
-        const sigmaResult = SOCTools.sigmaEngine.scanLog(rawAlert.payload);
-        
-        let logConfidence = 40;
-        if (sigmaResult.matchesFound > 0) {
-            logConfidence = 92;
-            sigmaResult.matchedRules.forEach(r => {
-                this.emitLog('log', `[SIGMA HIT] Rule ${r.id}: "${r.title}" — Severity: ${r.severity} — MITRE: ${r.mitre_ttp}`, 'warning');
-                MitreEngine.flagTTP(r.mitre_ttp.split('.')[0]);
-
-                // Kill Chain: Execution stage
-                this.activateKillChainStage('Execution', `Sigma rule ${r.id} matched encoded PowerShell execution`);
-            });
-
-            this.addRCAEvent('T+0.3s', 'Sigma Rule Triggered: Encoded PowerShell', `Rule SIGMA-2026-001 detected base64 encoded command execution on ${rawAlert.targetHost}.`, 'critical');
-            this.activateKillChainStage('Initial Access', 'Spearphishing payload opened by user');
-        } else {
-            this.emitLog('log', `Sigma engine clean. No rule matches in current payload.`, 'info');
-        }
-        this.agents.log.confidence = logConfidence;
-        this.agents.log.vote = logConfidence > 70 ? 'MALICIOUS' : 'BENIGN';
-        this.agents.log.hypotheses = [
-            { hypothesis: 'H1: Hostile In-Memory Command Execution / Dropper', supported: logConfidence > 70, evidence: sigmaResult.matchesFound > 0 ? `Sigma rule ${sigmaResult.matchedRules[0].id} triggered.` : 'No signatures matched.' },
-            { hypothesis: 'H2: Benign Administrative Maintenance Script', supported: logConfidence <= 70, evidence: 'Zero matched malicious patterns in command stream.' }
-        ];
-        this.agents.log.thoughtTrace = `1. Evaluated payload targeting ${rawAlert.targetHost}.\n2. Scanned Sigma correlation rules: ${sigmaResult.matchesFound} match(es).\n3. Hypothesis H1 evaluated with ${logConfidence}% confidence.`;
-
-        await this.delay(400);
-
-        // -------------------------------------------------------
-        // PHASE 3: THREAT INTELLIGENCE — VT, AbuseIPDB, Shodan, MISP
-        // -------------------------------------------------------
-        this.agents.threatintel.status = 'ENRICHING';
-        let vtResult = null;
-        let abuseResult = null;
-        let intelConfidence = 30;
-
-        if (rawAlert.ioc) {
-            const iocIp = rawAlert.ioc.split(' ')[0];
-            this.emitLog('threatintel', `Enriching IOC [${iocIp}] across 4 threat intelligence platforms...`, 'info');
-
-            const cached = SOCMemory.getIocCache(rawAlert.ioc);
-            if (cached) {
-                this.emitLog('threatintel', `MEMORY HIT: IOC [${iocIp}] found in Semantic Memory cache. Skipping external API calls.`, 'info');
-                vtResult = cached.data.vt;
-                abuseResult = cached.data.abuse;
-            } else {
-                vtResult = await SOCTools.virusTotal.queryIp(iocIp);
-                abuseResult = await SOCTools.abuseIPDB.checkIp(iocIp);
-                const shodanResult = await SOCTools.shodan.scanHost(iocIp);
-                const mispResult = await SOCTools.misp.searchAttributes(iocIp);
-
-                SOCMemory.cacheIoc(rawAlert.ioc, { vt: vtResult, abuse: abuseResult, shodan: shodanResult, misp: mispResult });
-
-                this.emitLog('threatintel', `SHODAN: Ports [${shodanResult.ports.join(', ')}], Tags: [${shodanResult.tags.join(', ')}], CVEs: ${shodanResult.openVulnerabilities.length > 0 ? shodanResult.openVulnerabilities.join(', ') : 'None'}`, 'info');
-                this.emitLog('threatintel', `MISP: Threat Actor "${mispResult.threat_actor}" linked to campaign "${mispResult.related_campaigns[0]}".`, 'warning');
-            }
-
-            this.emitLog('threatintel', `VIRUSTOTAL: ${vtResult.positives}/${vtResult.total} detections (Reputation: ${vtResult.reputation}). Categories: [${vtResult.categories.join(', ')}].`, 'warning');
-            this.emitLog('threatintel', `ABUSEIPDB: Confidence ${abuseResult.abuseConfidenceScore}% (${abuseResult.totalReports} reports, Country: ${abuseResult.countryCode}).`, 'warning');
-
-            intelConfidence = Math.min(99, Math.round((vtResult.positives / vtResult.total) * 100 + abuseResult.abuseConfidenceScore * 0.3));
-
-            this.addRCAEvent('T+0.7s', 'IOC Enriched: Known Malicious Infrastructure', `IP ${iocIp} confirmed malicious by ${vtResult.positives} vendors. Known Tor exit node / C2 beacon.`, 'critical');
-        }
-        this.agents.threatintel.confidence = intelConfidence;
-        this.agents.threatintel.vote = intelConfidence > 60 ? 'MALICIOUS' : 'SUSPICIOUS';
-        this.agents.threatintel.hypotheses = [
-            { hypothesis: `H1: Active C2 Communication to Hostile Endpoint ${rawAlert.ioc || 'IOC'}`, supported: intelConfidence > 60, evidence: `Enriched across threat platforms (${intelConfidence}% confidence).` },
-            { hypothesis: 'H2: Legitimate Content Delivery / Corporate Gateway', supported: intelConfidence <= 60, evidence: 'Reputation within expected enterprise limits.' }
-        ];
-        this.agents.threatintel.thoughtTrace = `1. Enriched candidate IOC ${rawAlert.ioc}.\n2. Multi-feed reputation evaluated.\n3. H1 supported with ${intelConfidence}% confidence.`;
-
-        await this.delay(400);
-
-        // -------------------------------------------------------
-        // PHASE 4: MALWARE SANDBOX — YARA & Hash Analysis
-        // -------------------------------------------------------
-        this.agents.malware.status = 'SCANNING';
-        this.emitLog('malware', `Detonating payload in sandboxed environment. Running YARA memory scanner...`, 'info');
-        const yaraVerdict = SOCTools.yaraEngine.scanPayload(rawAlert.payload);
-        
-        let malwareConfidence = 25;
-        if (yaraVerdict.verdict === 'MALICIOUS') {
-            malwareConfidence = 96;
-            yaraVerdict.matchedRules.forEach(r => {
-                this.emitLog('malware', `[YARA MATCH] Family: "${r.family}" — Matched strings: ${r.strings.join(', ')}`, 'danger');
-            });
-            MitreEngine.flagTTP('T1486');
-            MitreEngine.flagTTP('T1490');
-
-            this.activateKillChainStage('Defense Evasion', 'Payload obfuscation via base64 encoding detected');
-            this.activateKillChainStage('Exfiltration / Impact', `${yaraVerdict.matchedRules[0].family} ransomware payload staged`);
-
-            this.addRCAEvent('T+1.1s', 'YARA Rule Match: Ransomware Family Identified', `Malware family "${yaraVerdict.matchedRules[0].family}" confirmed in sandboxed process memory.`, 'critical');
-        } else {
-            this.emitLog('malware', `YARA sandbox analysis clean. No known malware signatures detected.`, 'info');
-        }
-        this.agents.malware.confidence = malwareConfidence;
-        this.agents.malware.vote = malwareConfidence > 60 ? 'MALICIOUS' : 'CLEAN';
-        this.agents.malware.hypotheses = [
-            { hypothesis: 'H1: Malicious Cryptor / Ransomware Payload Staged', supported: malwareConfidence > 60, evidence: malwareConfidence > 60 ? 'YARA matched ransomware family signatures.' : 'No malicious byte sequences.' },
-            { hypothesis: 'H2: Legitimate File Compression or Archiving Tool', supported: malwareConfidence <= 60, evidence: 'Zero malicious encryption routines found.' }
-        ];
-        this.agents.malware.thoughtTrace = `1. Detonated binary in simulated memory sandbox.\n2. YARA engine pattern analysis performed.\n3. Result: ${malwareConfidence}% confidence verdict rendered.`;
-
-        await this.delay(400);
-
-        // -------------------------------------------------------
-        // PHASE 5: CLOUD SECURITY — AWS/Azure Audit
-        // -------------------------------------------------------
-        this.agents.cloud.status = 'AUDITING';
-        let cloudConfidence = 20;
-
-        if (rawAlert.source.includes('AWS') || rawAlert.payload.includes('AssumeRole') || rawAlert.payload.includes('S3')) {
-            this.emitLog('cloud', `AWS CloudTrail event correlation triggered. Auditing STS, IAM, and S3 data plane...`, 'warning');
-            this.emitLog('cloud', `ANOMALY: STS AssumeRole from non-corporate IP range. S3 bulk GetObject detected.`, 'danger');
-            cloudConfidence = 94;
-            MitreEngine.flagTTP('T1078');
-            MitreEngine.flagTTP('T1567');
-
-            this.activateKillChainStage('Credential Access', 'Stolen IAM access key used for STS AssumeRole');
-            this.activateKillChainStage('Exfiltration / Impact', 'Bulk S3 data download from prod bucket');
-
-            this.addRCAEvent('T+1.5s', 'Cloud IAM Credential Compromise Confirmed', `Unauthorized STS session from non-corporate IP. Bulk S3 data download in progress.`, 'critical');
-        } else {
-            this.emitLog('cloud', `Cloud enclave telemetry verified normal. No unauthorized access patterns.`, 'info');
-        }
-        this.agents.cloud.confidence = cloudConfidence;
-        this.agents.cloud.vote = cloudConfidence > 60 ? 'MALICIOUS' : 'CLEAN';
-        this.agents.cloud.hypotheses = [
-            { hypothesis: 'H1: Stolen Cloud Credentials & Data Exfiltration', supported: cloudConfidence > 60, evidence: cloudConfidence > 60 ? 'Stolen IAM credentials used for unauthorized STS session.' : 'No cloud activity.' },
-            { hypothesis: 'H2: Authorized Multi-Region Backup / Migration Sync', supported: cloudConfidence <= 60, evidence: 'No anomalous cloud IAM actions observed.' }
-        ];
-        this.agents.cloud.thoughtTrace = `1. Correlated cloud control-plane telemetry.\n2. Analyzed STS AssumeRole invocation against IP reputation.\n3. Confidence evaluated at ${cloudConfidence}%.`;
-
-        await this.delay(400);
-
-        // -------------------------------------------------------
-        // PHASE 6: CONSENSUS PROTOCOL — Agent Negotiation & Voting
-        // -------------------------------------------------------
-        this.emitLog('coordinator', `INITIATING CONSENSUS PROTOCOL: Collecting votes from all 5 investigation agents...`, 'info');
-        await this.delay(200);
-
-        const votingAgents = ['log', 'threatintel', 'malware', 'cloud', 'compliance'];
-        this.agents.compliance.confidence = sigmaResult.matchesFound > 0 ? 88 : 50;
-        this.agents.compliance.vote = this.agents.compliance.confidence > 70 ? 'MALICIOUS' : 'INCONCLUSIVE';
-
-        this.consensusRecord = votingAgents.map(k => ({
-            agent: this.agents[k].name,
-            key: k,
-            vote: this.agents[k].vote || 'ABSTAIN',
-            confidence: this.agents[k].confidence,
-            color: this.agents[k].color,
-            hypotheses: this.agents[k].hypotheses || [],
-            thoughtTrace: this.agents[k].thoughtTrace || ''
-        }));
-
-        const maliciousVotes = this.consensusRecord.filter(v => v.vote === 'MALICIOUS').length;
-        const totalVotes = this.consensusRecord.length;
-        const consensusPct = Math.round((maliciousVotes / totalVotes) * 100);
-        const consensusReached = consensusPct >= 60;
-
-        this.emitLog('coordinator', `CONSENSUS RESULT: ${maliciousVotes}/${totalVotes} agents voted MALICIOUS (${consensusPct}% agreement). Consensus: ${consensusReached ? 'REACHED' : 'NOT REACHED'}.`, consensusReached ? 'warning' : 'info');
-
-        this.consensusRecord.forEach(v => {
-            this.emitLog('coordinator', `  → ${v.agent}: VOTE=${v.vote} | CONFIDENCE=${v.confidence}%`, v.vote === 'MALICIOUS' ? 'warning' : 'info');
-        });
-
-        // Weighted confidence score
-        const weightedConfidence = Math.round(
-            this.consensusRecord.reduce((sum, v) => sum + v.confidence, 0) / totalVotes
-        );
-
-        this.addRCAEvent(`T+1.9s`, 'Multi-Agent Consensus Reached', `${maliciousVotes}/${totalVotes} agents confirmed malicious intent. Weighted confidence: ${weightedConfidence}%.`, 'critical');
-
-        await this.delay(300);
-
-        // -------------------------------------------------------
-        // PHASE 6.5: ADVERSARIAL CRITIC — Reflection & Verification
-        // -------------------------------------------------------
-        this.agents.critic.status = 'CHALLENGING';
-        this.emitLog('critic', 'Adversarial Critic pass engaged: Stress-testing consensus against false positives.', 'info');
-        await this.delay(250);
-
-        const isThreatConfirmed = consensusPct >= 50;
-        this.criticEvaluation = {
-            challengePassed: isThreatConfirmed,
-            criticVerdict: isThreatConfirmed ? 'CONFIRMED_THREAT' : 'POTENTIAL_FALSE_POSITIVE',
-            counterEvidence: isThreatConfirmed
-                ? `Adversarial Critic stress-tested ${consensusPct}% consensus: anomalous process parameters, IOC threat reputation, and non-whitelisted autostart contradict benign IT maintenance profiles.`
-                : 'Alert patterns correlate with scheduled administrative maintenance. Low consensus signals high false-positive probability.',
-            confidenceAdjustment: isThreatConfirmed ? 5 : -10,
-            rationale: isThreatConfirmed
-                ? `Adversarial Critic confirmed threat consensus (${consensusPct}%): multi-source evidence eliminates confirmation bias.`
-                : 'Adversarial Critic challenged consensus: potential benign administrative activity detected.'
-        };
-        this.agents.critic.status = 'COMPLETED';
-        this.agents.critic.confidence = 94;
-        this.agents.critic.vote = isThreatConfirmed ? 'MALICIOUS' : 'BENIGN';
-        this.agents.critic.thoughtTrace = this.criticEvaluation.counterEvidence;
-        this.agents.critic.hypotheses = [
-            { hypothesis: 'Challenge: Benign Administrative Script / Routine Maintenance', supported: !isThreatConfirmed, evidence: 'Zero correlating maintenance tickets found.' },
-            { hypothesis: 'Verification: Confirmed Hostile Threat Vector', supported: isThreatConfirmed, evidence: 'Multi-source correlation confirms malicious intent.' }
-        ];
-        this.emitLog('critic', `CRITIC VERDICT: ${this.criticEvaluation.criticVerdict} — ${this.criticEvaluation.rationale}`, isThreatConfirmed ? 'success' : 'warning');
-        if (window.AppController?.renderCriticEvaluation) {
-            window.AppController.renderCriticEvaluation(this.criticEvaluation);
-        }
-
-        await this.delay(300);
-
-        // -------------------------------------------------------
-        // PHASE 7: HUMAN APPROVAL GATE — Risk Threshold Check
-        // -------------------------------------------------------
-        const calculatedRisk = Math.max(0, Math.min(100, weightedConfidence + (this.criticEvaluation?.confidenceAdjustment || 0)));
-        this.agents.approval.status = 'EVALUATING';
-        this.agents.approval.confidence = 100;
-        this.emitLog('approval', `RISK ASSESSMENT: Weighted Severity Score = ${calculatedRisk}/100 (Auto-execution threshold: ${autoThreshold}/100).`, 'info');
-
-        const requireApproval = calculatedRisk > autoThreshold && (rawAlert.targetHost.includes('DC-PRIMARY') || rawAlert.targetHost.includes('FIN-SERVER'));
-
-        let actionExecuted = false;
-        if (requireApproval) {
-            this.emitLog('approval', `HIGH IMPACT ACTION: Target [${rawAlert.targetHost}] is CRITICAL infrastructure. Escalating to Human Approval Queue.`, 'warning');
-            
-            this.addRCAEvent('T+2.3s', 'Action Escalated to Human Approval', `Risk score ${calculatedRisk} exceeds threshold ${autoThreshold}. Core infrastructure target requires human authorization.`, 'info');
-
-            window.AppController?.addApprovalRequest({
-                alertId: rawAlert.id,
-                title: rawAlert.title,
-                target: rawAlert.targetHost,
-                riskScore: calculatedRisk,
-                consensus: `${maliciousVotes}/${totalVotes} agents (${consensusPct}%)`,
-                proposedAction: `Isolate network adapter & revoke domain credentials for host ${rawAlert.targetHost}`,
-                reasoning: `VT: ${vtResult ? vtResult.positives : '?'}/92, YARA: ${yaraVerdict.verdict}, Sigma: ${sigmaResult.matchesFound} hits, Consensus: ${consensusPct}%.`
-            });
-        } else {
-            // -------------------------------------------------------
-            // PHASE 8: AUTONOMOUS INCIDENT RESPONSE — Containment
-            // -------------------------------------------------------
-            this.agents.response.status = 'EXECUTING';
-            this.agents.response.confidence = 97;
-            this.emitLog('response', `AUTONOMOUS CONTAINMENT INITIATED. Consensus: ${consensusPct}%. Executing response playbook...`, 'danger');
-
-            this.emitLog('response', `[ACTION 1/4] Host network interface on [${rawAlert.targetHost}] ISOLATED via CrowdStrike EDR API.`, 'success');
-            this.activateKillChainStage('Lateral Movement', 'BLOCKED: Network isolation prevents lateral propagation');
-            await this.delay(200);
-
-            if (rawAlert.ioc) {
-                this.emitLog('response', `[ACTION 2/4] Malicious C2 IP [${rawAlert.ioc.split(' ')[0]}] BLOCKED on Perimeter Palo Alto Firewall.`, 'success');
-            }
-            await this.delay(200);
-
-            this.emitLog('response', `[ACTION 3/4] Active user sessions TERMINATED. Domain credentials REVOKED.`, 'success');
-            this.emitLog('response', `[ACTION 4/4] Volume Shadow Copy restoration dry-run initiated.`, 'success');
-
-            this.addRCAEvent('T+2.5s', 'Autonomous Containment Executed', `Host isolated, C2 IP blocked, credentials revoked. All actions executed with ${consensusPct}% agent consensus.`, 'critical');
-
-            actionExecuted = true;
-
-            if (window.SOCTwinInstance) {
-                window.SOCTwinInstance.setNodeStatus('FIN-SERVER-04', 'isolated');
-                window.SOCTwinInstance.setAttackPath('FW-PERIMETER-01', 'FIN-SERVER-04');
-            }
-        }
-
-        await this.delay(300);
-
-        // -------------------------------------------------------
-        // PHASE 9: COMPLIANCE AUDIT — Regulatory & SLA Check
-        // -------------------------------------------------------
-        this.agents.compliance.status = 'COMPLETED';
-        this.emitLog('compliance', `GDPR Article 33 72-hour log entry recorded. PCI-DSS enclave safety verified. Immutable cryptographic audit trail sealed.`, 'info');
-
-        const endTime = performance.now();
-        const latencySec = ((endTime - startTime) / 1000).toFixed(2);
-
-        this.addRCAEvent(`T+${latencySec}s`, 'Investigation Pipeline Complete', `Full autonomous investigation completed in ${latencySec}s across 8 specialized agents.`, 'info');
-
-        // -------------------------------------------------------
-        // PHASE 10: THREAT PREDICTION — Predict Next Likely TTPs
-        // -------------------------------------------------------
-        this.emitLog('coordinator', `THREAT PREDICTION ENGINE: Analyzing attack progression to predict adversary's next move...`, 'info');
-        this.predictedTTPs = this.predictNextTTPs(rawAlert);
-        if (this.predictedTTPs.length > 0) {
-            this.predictedTTPs.forEach(p => {
-                this.emitLog('coordinator', `[PREDICTION] Next likely TTP: ${p.id} "${p.name}" — Probability: ${p.probability}% — Recommended pre-emptive action: ${p.preemptive}`, 'warning');
-            });
-        }
-
-        // -------------------------------------------------------
-        // PHASE 11: AUTONOMOUS PLAYBOOK GENERATION
-        // -------------------------------------------------------
-        this.generatedPlaybook = this.generatePlaybook(rawAlert, actionExecuted, yaraVerdict, vtResult);
-        this.emitLog('coordinator', `PLAYBOOK GENERATOR: New adaptive playbook "${this.generatedPlaybook.name}" synthesized from current incident patterns and episodic memory.`, 'success');
-
-        // Save to Episodic Memory
-        SOCMemory.addEpisodicMemory({
-            title: rawAlert.title,
-            enclave: rawAlert.source,
-            rootCause: `Detected execution of malicious payload on asset ${rawAlert.targetHost}`,
-            actionsTaken: actionExecuted ? ['Host Isolated via EDR', 'C2 IP Blocked on Perimeter FW', 'Credentials Revoked', 'Shadow Copy Restoration Initiated'] : ['Escalated to Human Approval Queue'],
-            resolutionOutcome: actionExecuted ? 'SUCCESS — Autonomous containment complete' : 'PENDING HUMAN APPROVAL',
-            mttrSeconds: latencySec
-        });
-
-        // Final Coordinator Synthesis
-        this.agents.coordinator.status = 'COMPLETED';
-        this.agents.coordinator.confidence = 99;
-        this.emitLog('coordinator', `INVESTIGATION COMPLETE in ${latencySec}s. Consensus: ${consensusPct}% (${maliciousVotes}/${totalVotes}). Weighted Confidence: ${weightedConfidence}%. Status: ${actionExecuted ? 'CONTAINED' : 'PENDING APPROVAL'}.`, 'success');
-
-        return {
-            status: actionExecuted ? 'CONTAINED' : 'PENDING_APPROVAL',
-            riskScore: calculatedRisk,
-            latencySec,
-            consensusPct,
-            weightedConfidence,
-            maliciousVotes,
-            totalVotes
-        };
-    }
-
-    // ===========================================================
-    // THREAT PREDICTION ENGINE (Bonus Feature)
-    // Predicts next likely adversary TTPs based on current kill chain
-    // ===========================================================
-    predictNextTTPs(alert) {
-        const predictions = [];
-        const activeStages = Object.keys(this.killChainState);
-
-        if (activeStages.includes('Initial Access') && activeStages.includes('Execution')) {
-            predictions.push({
-                id: 'T1003.001',
-                name: 'LSASS Memory Credential Dumping',
-                probability: 87,
-                preemptive: 'Enable LSA RunAsPPL protection & deploy Credential Guard.',
-                reasoning: 'Initial access + code execution typically followed by credential harvesting for lateral movement.'
-            });
-        }
-
-        if (activeStages.includes('Credential Access') || activeStages.includes('Lateral Movement')) {
-            predictions.push({
-                id: 'T1021.002',
-                name: 'SMB/WinRM Lateral Movement',
-                probability: 78,
-                preemptive: 'Restrict SMB traffic to admin-only VLANs. Enable WinRM authentication logging.',
-                reasoning: 'After credential compromise, adversaries typically pivot via remote service protocols.'
-            });
-        }
-
-        if (activeStages.includes('Exfiltration / Impact')) {
-            predictions.push({
-                id: 'T1070.001',
-                name: 'Event Log Clearing (Anti-Forensics)',
-                probability: 72,
-                preemptive: 'Forward all event logs to immutable SIEM. Enable Sysmon with tamper protection.',
-                reasoning: 'Post-impact, adversaries commonly attempt evidence destruction to hinder investigation.'
-            });
-        }
-
-        if (predictions.length === 0) {
-            predictions.push({
-                id: 'T1059.001',
-                name: 'PowerShell Command Execution',
-                probability: 65,
-                preemptive: 'Enable Constrained Language Mode and Script Block Logging.',
-                reasoning: 'Default prediction based on most common post-initial-access execution vector.'
-            });
-        }
-
-        return predictions;
-    }
-
-    // ===========================================================
-    // AUTONOMOUS PLAYBOOK GENERATOR (Bonus Feature)
-    // Synthesizes new playbooks from current incident + episodic memory
-    // ===========================================================
-    generatePlaybook(alert, wasContained, yaraResult, vtResult) {
-        const steps = [];
-        let playbookName = 'ADAPTIVE-PLAYBOOK';
-
-        // Learn from past similar incidents
-        const similar = SOCMemory.querySimilarIncidents(alert.title.split(' ')[0]);
-
-        if (yaraResult.verdict === 'MALICIOUS') {
-            playbookName = `AUTO-PB-RANSOMWARE-${Date.now().toString(36).toUpperCase()}`;
-            steps.push('STEP 1: Immediately isolate host network adapter via EDR API (CrowdStrike/SentinelOne).');
-            steps.push('STEP 2: Terminate all child processes of detected malicious parent PID.');
-            steps.push('STEP 3: Block C2 IP on perimeter firewall (Palo Alto PAN-OS API).');
-            steps.push('STEP 4: Force-reset compromised Active Directory user credentials.');
-            steps.push('STEP 5: Initiate Volume Shadow Copy restoration (dry-run first, then live).');
-            steps.push('STEP 6: Scan all lateral hosts in same subnet for IOC propagation.');
-        } else if (alert.payload.includes('AssumeRole') || alert.payload.includes('S3')) {
-            playbookName = `AUTO-PB-CLOUD-EXFIL-${Date.now().toString(36).toUpperCase()}`;
-            steps.push('STEP 1: Attach IAM DenyAll inline policy to compromised principal.');
-            steps.push('STEP 2: Invalidate all active STS session tokens.');
-            steps.push('STEP 3: Audit CloudTrail for S3 GetObject access in last 24 hours.');
-            steps.push('STEP 4: Enable S3 Object Lock on sensitive production buckets.');
-            steps.push('STEP 5: Rotate all IAM access keys in affected AWS account.');
-        } else {
-            playbookName = `AUTO-PB-GENERIC-${Date.now().toString(36).toUpperCase()}`;
-            steps.push('STEP 1: Isolate affected host from network.');
-            steps.push('STEP 2: Collect forensic memory dump and disk image.');
-            steps.push('STEP 3: Block all identified IOC indicators on perimeter.');
-            steps.push('STEP 4: Notify security operations team for manual review.');
-        }
-
-        if (similar.length > 0) {
-            steps.push(`STEP ${steps.length + 1}: [LEARNED FROM EPISODIC MEMORY] Similar incident "${similar[0].title}" was resolved via: ${similar[0].actionsTaken.join(', ')}. Apply same pattern.`);
-        }
-
-        return {
-            name: playbookName,
-            generatedAt: new Date().toISOString(),
-            basedOn: alert.title,
-            steps,
-            confidence: wasContained ? 95 : 80
-        };
     }
 
     resetAll() {
         Object.keys(this.agents).forEach(k => {
-            this.agents[k].status = 'READY';
+            this.agents[k].status     = 'READY';
             this.agents[k].confidence = 0;
-            this.agents[k].vote = null;
-            this.agents[k].logs = [];
+            this.agents[k].vote       = null;
+            this.agents[k].logs       = [];
             this.agents[k].hypotheses = [];
             this.agents[k].thoughtTrace = '';
         });
-        this.rcaTimeline = [];
-        this.killChainState = {};
-        this.consensusRecord = [];
-        this.predictedTTPs = [];
-        this.generatedPlaybook = null;
-        this.criticEvaluation = null;
-        this.recalledEpisodes = [];
+        this.rcaTimeline      = [];
+        this.killChainState   = {};
+        this.consensusRecord  = [];
+        this.predictedTTPs    = [];
+        this.generatedPlaybook  = null;
+        this.criticEvaluation   = null;
+        this.recalledEpisodes   = [];
+        this._lastBackendResult = null;
     }
 
-    delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
+    delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 }
 
 const SwarmEngine = new SOCAgentSwarm();

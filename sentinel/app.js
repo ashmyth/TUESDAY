@@ -62,13 +62,7 @@ class TuesdayApp {
             }
         });
 
-        // Header Buttons
-        document.getElementById('btn-trigger-attack')?.addEventListener('click', () => {
-            document.querySelector('[data-tab="tab-simulator"]')?.click();
-        });
-        document.getElementById('btn-ingest-custom')?.addEventListener('click', () => {
-            document.querySelector('[data-tab="tab-simulator"]')?.click();
-        });
+        // Header Action Buttons
         document.getElementById('btn-export-report')?.addEventListener('click', () => {
             this.openExecutiveReportModal();
         });
@@ -80,32 +74,6 @@ class TuesdayApp {
         });
         document.getElementById('btn-print-report')?.addEventListener('click', () => {
             window.print();
-        });
-
-        // Scenario Buttons
-        document.querySelectorAll('.btn-run-scenario').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const scenario = e.currentTarget.getAttribute('data-scenario');
-                document.querySelector('[data-tab="tab-dashboard"]')?.click();
-                AttackSimulator.executeScenario(scenario);
-            });
-        });
-
-        // Custom Alert Form
-        document.getElementById('form-custom-alert')?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const source = document.getElementById('alert-source').value;
-            const target = document.getElementById('alert-target').value;
-            const ioc = document.getElementById('alert-ioc').value;
-            const payload = document.getElementById('alert-payload').value;
-
-            document.querySelector('[data-tab="tab-dashboard"]')?.click();
-            this.handleIncomingAlert({
-                id: `ALERT-${Math.floor(1000 + Math.random() * 9000)}`,
-                title: `Custom Threat: ${ioc.split(' ')[0]}`,
-                source, targetHost: target, ioc, payload,
-                timestamp: new Date().toLocaleTimeString()
-            });
         });
 
         this.seedInitialAlerts();
@@ -1282,11 +1250,110 @@ class TuesdayApp {
                     this.renderHostTelemetry(data);
                 } catch (err) {}
             });
+
             hostSource.addEventListener('threat_detected', (e) => {
                 try {
                     const threat = JSON.parse(e.data);
                     AudioEngine.playAlertSound();
-                    this.appendTerminalLog('coordinator', `[WATCHDOG LIVE ALERT] ${threat.title} detected on ${threat.targetHost}`, 'danger');
+                    AudioEngine.speak(`Hostile threat detected: ${threat.title}. Multi-agent response active.`);
+                    
+                    // Automatically focus Command Center tab to show live defense reaction
+                    const cmdTab = document.querySelector('[data-tab="tab-dashboard"]');
+                    if (cmdTab && !cmdTab.classList.contains('active')) {
+                        cmdTab.click();
+                    }
+
+                    this.appendTerminalLog('coordinator', `>> [HOSTILE THREAT DETECTED] ${threat.title} on ${threat.targetHost || threat.host || 'DESKTOP-TUESDAY'}`, 'danger');
+                    this.appendTerminalLog('coordinator', `>> Ingested hostile payload: ${threat.payload || threat.title}`, 'warning');
+
+                    // Light up threat banner to alert-hostile
+                    const banner = document.getElementById('active-threat-banner');
+                    if (banner) {
+                        banner.className = 'matrix-banner alert-hostile pulse';
+                        const tTitle = document.getElementById('threat-title');
+                        if (tTitle) tTitle.innerText = `>> HOSTILE ATTACK DETECTED: ${(threat.title || 'UNKNOWN THREAT').toUpperCase()}`;
+                        const tDesc = document.getElementById('threat-desc');
+                        if (tDesc) tDesc.innerText = `Target: ${threat.targetHost || threat.host || 'DESKTOP-TUESDAY'} | IOC: ${threat.ioc || 'Hostile Payload'} | Ingested via RedTeam Drill`;
+                    }
+                    this.startMTTRTimer();
+
+                    // Prepend new item to SIEM feed
+                    const feedList = document.getElementById('alert-feed-list');
+                    if (feedList) {
+                        const item = document.createElement('div');
+                        item.className = 'stream-item critical pulse';
+                        item.innerHTML = `
+                            <div class="stream-item-header" style="display:flex; justify-content:space-between;">
+                                <span class="badge badge-matrix-red"><i class="fa-solid fa-skull"></i> THREAT INGESTED</span>
+                                <span class="stream-time" style="font-family:monospace; font-size:0.75rem; color:#888;">${new Date().toLocaleTimeString()}</span>
+                            </div>
+                            <div class="stream-item-title" style="font-weight:bold; color:#fff; margin:0.3rem 0;">${threat.title}</div>
+                            <div class="stream-item-target" style="font-family:monospace; font-size:0.8rem; color:#60a5fa;">Host: ${threat.targetHost || threat.host || 'DESKTOP-TUESDAY'} | IOC: ${threat.ioc || '185.220.101.5'}</div>
+                        `;
+                        feedList.prepend(item);
+                    }
+
+                    // Animate swarm agents
+                    ['log', 'threatintel', 'malware', 'cloud', 'critic'].forEach(k => {
+                        this.pulseAgentNode(k);
+                        this.pulseAgentSVGLine(k);
+                    });
+                } catch (err) {}
+            });
+
+            hostSource.addEventListener('agent_log', (e) => {
+                try {
+                    const log = JSON.parse(e.data);
+                    this.appendTerminalLog(log.agent || 'coordinator', log.message, log.level || 'info');
+                    if (log.agent) {
+                        this.pulseAgentNode(log.agent);
+                        this.pulseAgentSVGLine(log.agent);
+                    }
+                } catch (err) {}
+            });
+
+            hostSource.addEventListener('incident_result', (e) => {
+                try {
+                    const res = JSON.parse(e.data);
+                    const alert = res.alert || {};
+                    this.stopMTTRTimer(res.latencySec);
+
+                    // Update threat score meter
+                    const scoreEl = document.getElementById('threat-score-val');
+                    if (scoreEl) scoreEl.innerText = `${res.riskScore}/100`;
+
+                    // Update banner state
+                    const banner = document.getElementById('active-threat-banner');
+                    if (banner) {
+                        banner.className = res.status === 'CONTAINED' ? 'matrix-banner alert-contained' : 'matrix-banner alert-hostile';
+                        const tTitle = document.getElementById('threat-title');
+                        if (tTitle) tTitle.innerText = `>> ${res.status === 'CONTAINED' ? 'AUTONOMOUS CONTAINMENT ENFORCED' : 'INVESTIGATION COMPLETE'}: ${alert.title || 'THREAT'}`;
+                    }
+
+                    // Sync SwarmEngine state
+                    SwarmEngine._lastBackendResult = res;
+                    if (res.votes) SwarmEngine.consensusRecord = res.votes;
+                    if (res.critic) SwarmEngine.criticEvaluation = res.critic;
+                    if (res.playbook) SwarmEngine.generatedPlaybook = res.playbook;
+                    if (res.killChainState) SwarmEngine.killChainState = res.killChainState;
+                    if (res.ttpsDetected) SwarmEngine.predictedTTPs = res.ttpsDetected.map(id => ({ id, name: id, probability: 85 }));
+                    if (res.recalledEpisodes) SwarmEngine.recalledEpisodes = res.recalledEpisodes;
+
+                    // Re-render panels with completed investigation
+                    this.renderConsensus();
+                    if (res.critic) this.renderCriticEvaluation(res.critic);
+                    this.renderPlaybook();
+                    this.renderKillChain();
+                    this.renderPredictions();
+                    this.renderPCAPPackets(alert);
+                    this.loadFirewallRules();
+
+                    if (res.status === 'CONTAINED') {
+                        if (window.SOCTwinInstance && alert.ioc) {
+                            window.SOCTwinInstance.containThreatNode(alert.ioc, alert.targetHost || alert.host);
+                        }
+                        AudioEngine.speak(`Autonomous containment executed successfully in ${res.latencySec} seconds with ${res.consensusPct} percent agent consensus.`);
+                    }
                 } catch (err) {}
             });
         } catch (e) {
@@ -1311,20 +1378,24 @@ class TuesdayApp {
             const data = await res.json();
             const rules = data.rules || [];
             if (rules.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888;">No active firewall rules injected yet. Run an attack drill or use manual block.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888;">No active firewall rules injected yet. Run an attack drill from RedTeam (Port 8095).</td></tr>';
                 return;
             }
             tbody.innerHTML = '';
             rules.forEach(r => {
                 const tr = document.createElement('tr');
+                const ruleName = r.rule || r.ruleName || 'TUESDAY_ISOLATE';
+                const targetIp = r.target || r.ip || 'DESKTOP-TUESDAY';
+                const mode = r.mode || 'LIVE_NETSH';
+                const status = r.status || 'ACTIVE';
                 tr.innerHTML = `
-                    <td style="font-family:monospace;font-weight:bold;color:var(--matrix-amber);">${r.ruleName || 'RULE'}</td>
-                    <td style="font-family:monospace;color:var(--matrix-red);">${r.ip}</td>
-                    <td><span class="badge badge-matrix-red">${r.mode || 'FULL_DROP'}</span></td>
-                    <td style="font-size:0.75rem;color:var(--text-muted);">${r.blockedAt ? new Date(r.blockedAt).toLocaleTimeString() : 'Recent'}</td>
-                    <td><span class="badge badge-matrix-green">${r.status || 'ACTIVE'}</span></td>
+                    <td style="font-family:monospace;font-weight:bold;color:var(--matrix-amber);">${ruleName}</td>
+                    <td style="font-family:monospace;color:var(--matrix-red);">${targetIp}</td>
+                    <td><span class="badge badge-matrix-red">${mode}</span></td>
+                    <td style="font-size:0.75rem;color:var(--text-muted);">${r.timestamp ? new Date(r.timestamp).toLocaleTimeString() : 'Recent'}</td>
+                    <td><span class="badge badge-matrix-green">${status}</span></td>
                     <td>
-                        <button class="btn btn-matrix-outline btn-xs" onclick="window.AppController.unblockHostIP('${r.ip}')">
+                        <button class="btn btn-matrix-outline btn-xs" onclick="window.AppController.unblockHostIP('${ruleName}')">
                             <i class="fa-solid fa-unlock"></i> UNBLOCK
                         </button>
                     </td>

@@ -1,6 +1,206 @@
 {
   "episodicMemory": [
     {
+      "id": "SIM-001",
+      "title": "LockBit 3.0 Ransomware Outbreak Attempt",
+      "host": "FIN-SERVER-04 (192.168.10.45)",
+      "ioc": "185.220.101.5",
+      "process": "",
+      "timestamp": "2026-09-13T01:26:43Z",
+      "status": "CONTAINED",
+      "riskScore": 85,
+      "consensusPct": 50,
+      "ttpsDetected": [
+        "T1059.001",
+        "T1486",
+        "T1490"
+      ],
+      "critic": "CONFIRMED_THREAT",
+      "latencySec": 11.19
+    },
+    {
+      "id": "SIM-001",
+      "title": "LockBit 3.0 Ransomware Outbreak Attempt",
+      "host": "FIN-SERVER-04 (192.168.10.45)",
+      "ioc": "185.220.101.5",
+      "process": "",
+      "timestamp": "2026-09-13T01:26:30Z",
+      "status": "CONTAINED",
+      "riskScore": 85,
+      "consensusPct": 50,
+      "ttpsDetected": [
+        "T1059.001",
+        "T1486",
+        "T1490"
+      ],
+      "critic": "CONFIRMED_THREAT",
+      "latencySec": 15.34
+    },
+    {
+      "id": "SIM-004",
+      "title": "Covert Telemetry Harvester & Browser Credential Spyware",
+      "host": "DEV-WORKSTATION-09 (192.168.20.14)",
+      "ioc": "185.220.101.99",
+      "process": "",
+      "timestamp": "2026-09-13T01:25:44Z",
+      "status": "CONTAINED",
+      "riskScore": 85,
+      "consensusPct": 50,
+      "ttpsDetected": [],
+      "critic": "CONFIRMED_THREAT",
+      "latencySec": 8.64
+    },
+    {
+      "id": "HARVEST-6AA5AE2B",
+      "title": "Unauthorized Credential Harvester & Outbound Telemetry Siphon",
+      "host": "DEV-WORKSTATION-09 (192.168.20.14)",
+      "ioc": "185.220.101.99",
+      "process": "",
+      "timestamp": "2026-09-13T01:25:33Z",
+      "status": "CONTAINED",
+      "riskScore": 85,
+      "consensusPct": 50,
+      "ttpsDetected": [],
+      "critic": "CONFIRMED_THREAT",
+      "latencySec": 8.56
+    },
+    {
+      "id": "SIM-004",
+      "title": "Covert Telemetry Harvester & Browser Credential Spyware",
+      "host": "DEV-WORKSTATION-09 (192.168.20.14)",
+      "ioc": "185.220.101.99",
+      "process": "",
+      "timestamp": "2026-09-13T01:24:22Z",
+      "status": "CONTAINED",
+      "riskScore": 85,
+      "consensusPct": 50,
+      "ttpsDetected": [],
+      "critic": "CONFIRMED_THREAT",
+      "latencySec": 9.21
+    },
+    {
+      "id": "HARVEST-6AA5ADA7",
+      "title": "Unauthorized Credential Harvester & Outbound Telemetry Siphon",
+      "host": "DEV-WORKSTATION-09 (192.168.20.14)",
+      "ioc": "185.220.101.99",
+      "process": "",
+      "timestamp": "2026-09-13T01:23:21Z",
+      "status": "CONTAINED",
+      "riskScore": 85,
+      "consensusPct": 50,
+      "ttpsDetected": [],
+      "critic": "CONFIRMED_THREAT",
+      "latencySec": 8.0
+    },
+    {
+      "id": "SIM-002",
+      "title": "AWS Cloud Credential Compromise & S3 Mass-Download",
+      "host": "AWS-S3-PROD-LOGS (cloud-aws)",
+      "ioc": "193.142.146.35",
+      "process": "",
+      "timestamp": "2026-09-13T01:04:33Z",
+      "status": "CONTAINED",
+      "riskScore": 85,
+      "consensusPct": 50,
+      "ttpsDetected": [],
+      "critic": "CONFIRMED_THREAT",
+      "latencySec": 9.34
+    },
+    {
+      "id": "SIM-002",
+      "title": "AWS Cloud Credential Compromise & S3 Mass-Download",
+      "host": "AWS-S3-PROD-LOGS (cloud-aws)",
+      "ioc": "193.142.146.35",
+      "process": "",
+      "timestamp": "2026-09-13T01:04:22Z",
+      "status": "CONTAINED",
+      "riskScore": 85,
+      "consensusPct": 50,
+      "ttpsDetected": [],
+      "critic": "CONFIRMED_THREAT",
+      "latencySec": 6.98
+    },
+    {
+      "id": "LIVE-TEST-001",
+      "title": "Ransomware Canary File Deletion + Encoded PowerShell Downloader",
+      "host": "DESKTOP-TUESDAY",
+      "ioc": "185.220.101.5",
+      "process": "powershell.exe",
+      "timestamp": "2026-09-13T00:59:08Z",
+      "status": "CONTAINED",
+      "riskScore": 85,
+      "consensusPct": 50,
+      "ttpsDetected": [
+        "T1059.001"
+      ],
+      "critic": "CONFIRMED_THREAT",
+      "latencySec": 12.04
+    },
+    {
+      "id": "LIVE-TEST-001",
+      "title": "Ransomware Canary File Deletion + Encoded PowerShell Downloader",
+      "host": "DESKTOP-TUESDAY",
+      "ioc": "185.220.101.5",
+      "process": "powershell.exe",
+      "timestamp": "2026-09-13T00:58:07Z",
+      "status": "FAILED",
+      "riskScore": 85,
+      "consensusPct": 50,
+      "ttpsDetected": [
+        "T1059.001"
+      ],
+      "critic": "CONFIRMED_THREAT",
+      "latencySec": 8.57
+    },
+    {
+      "id": "LIVE-TEST-001",
+      "title": "Ransomware Canary File Deletion + Encoded PowerShell Downloader",
+      "host": "DESKTOP-TUESDAY",
+      "ioc": "185.220.101.5",
+      "process": "powershell.exe",
+      "timestamp": "2026-09-13T00:57:29Z",
+      "status": "FAILED",
+      "riskScore": 85,
+      "consensusPct": 50,
+      "ttpsDetected": [
+        "T1059.001"
+      ],
+      "critic": "CONFIRMED_THREAT",
+      "latencySec": 29.88
+    },
+    {
+      "id": "LIVE-TEST-001",
+      "title": "Ransomware Canary File Deletion + Encoded PowerShell Downloader",
+      "host": "DESKTOP-TUESDAY",
+      "ioc": "185.220.101.5",
+      "process": "powershell.exe",
+      "timestamp": "2026-09-13T00:42:29Z",
+      "status": "FAILED",
+      "riskScore": 100,
+      "consensusPct": 100,
+      "ttpsDetected": [
+        "T1059.001"
+      ],
+      "critic": "CONFIRMED_THREAT",
+      "latencySec": 180.15
+    },
+    {
+      "id": "LIVE-TEST-001",
+      "title": "Ransomware Canary File Deletion + Encoded PowerShell Downloader",
+      "host": "DESKTOP-TUESDAY",
+      "ioc": "185.220.101.5",
+      "process": "powershell.exe",
+      "timestamp": "2026-09-12T23:57:29Z",
+      "status": "CONTAINED",
+      "riskScore": 100,
+      "consensusPct": 100,
+      "ttpsDetected": [
+        "T1059.001"
+      ],
+      "critic": "CONFIRMED_THREAT",
+      "latencySec": 89.24
+    },
+    {
       "id": "MEM-EP-2026-823",
       "timestamp": "2026-09-12T17:53:49.756Z",
       "title": "Suspicious PowerShell Download and Execution",
@@ -21,7 +221,7 @@
         "PROCESS_TERMINATE",
         "HOST_ISOLATION"
       ],
-      "resolutionOutcome": "SUCCESS — Autonomous host containment verified",
+      "resolutionOutcome": "SUCCESS \u2014 Autonomous host containment verified",
       "mttrSeconds": "43.72",
       "riskScore": 24,
       "consensusPct": 0,
@@ -48,7 +248,7 @@
         "PROCESS_TERMINATE",
         "HOST_ISOLATION"
       ],
-      "resolutionOutcome": "SUCCESS — Autonomous host containment verified",
+      "resolutionOutcome": "SUCCESS \u2014 Autonomous host containment verified",
       "mttrSeconds": "17.32",
       "riskScore": 67,
       "consensusPct": 50,
@@ -80,7 +280,7 @@
         "CREDENTIAL_REVOKE",
         "SHADOW_COPY_RESTORE"
       ],
-      "resolutionOutcome": "SUCCESS — Autonomous host containment verified",
+      "resolutionOutcome": "SUCCESS \u2014 Autonomous host containment verified",
       "mttrSeconds": "0.95",
       "riskScore": 39,
       "consensusPct": 25,
@@ -138,7 +338,7 @@
         "CREDENTIAL_REVOKE",
         "SHADOW_COPY_RESTORE"
       ],
-      "resolutionOutcome": "SUCCESS — Autonomous host containment verified",
+      "resolutionOutcome": "SUCCESS \u2014 Autonomous host containment verified",
       "mttrSeconds": "0.99",
       "riskScore": 82,
       "consensusPct": 75,
@@ -171,7 +371,7 @@
         "CREDENTIAL_REVOKE",
         "SHADOW_COPY_RESTORE"
       ],
-      "resolutionOutcome": "SUCCESS — Autonomous host containment verified",
+      "resolutionOutcome": "SUCCESS \u2014 Autonomous host containment verified",
       "mttrSeconds": "0.93",
       "riskScore": 39,
       "consensusPct": 25,
@@ -231,7 +431,7 @@
         "CREDENTIAL_REVOKE",
         "SHADOW_COPY_RESTORE"
       ],
-      "resolutionOutcome": "SUCCESS — Autonomous host containment verified",
+      "resolutionOutcome": "SUCCESS \u2014 Autonomous host containment verified",
       "mttrSeconds": "0.94",
       "riskScore": 49,
       "consensusPct": 25,
@@ -261,7 +461,7 @@
         "CREDENTIAL_REVOKE",
         "SHADOW_COPY_RESTORE"
       ],
-      "resolutionOutcome": "SUCCESS — Autonomous host containment verified",
+      "resolutionOutcome": "SUCCESS \u2014 Autonomous host containment verified",
       "mttrSeconds": "0.93",
       "riskScore": 49,
       "consensusPct": 25,
@@ -280,7 +480,7 @@
       "actionsTaken": [
         "HOST_ISOLATION|FW_BLOCK|CREDENTIAL_REVOKE|SESSION_TERMINATE|SHADOW_COPY_RESTORE"
       ],
-      "resolutionOutcome": "SUCCESS — Autonomous containment complete",
+      "resolutionOutcome": "SUCCESS \u2014 Autonomous containment complete",
       "mttrSeconds": "46.36",
       "riskScore": 50,
       "consensusPct": 50,
@@ -302,7 +502,7 @@
       "actionsTaken": [
         "HOST_ISOLATION|FW_BLOCK|CREDENTIAL_REVOKE|SESSION_TERMINATE|SHADOW_COPY_RESTORE"
       ],
-      "resolutionOutcome": "SUCCESS — Autonomous containment complete",
+      "resolutionOutcome": "SUCCESS \u2014 Autonomous containment complete",
       "mttrSeconds": "73.77",
       "riskScore": 75,
       "consensusPct": 75,
@@ -349,7 +549,7 @@
       "actionsTaken": [
         "HOST_ISOLATION|FW_BLOCK|CREDENTIAL_REVOKE|SESSION_TERMINATE|SHADOW_COPY_RESTORE"
       ],
-      "resolutionOutcome": "SUCCESS — Human-approved autonomous containment complete",
+      "resolutionOutcome": "SUCCESS \u2014 Human-approved autonomous containment complete",
       "mttrSeconds": "14.60",
       "riskScore": 25,
       "consensusPct": 25,
@@ -369,7 +569,7 @@
       "actionsTaken": [
         "HOST_ISOLATION|FW_BLOCK|CREDENTIAL_REVOKE|SESSION_TERMINATE|SHADOW_COPY_RESTORE"
       ],
-      "resolutionOutcome": "SUCCESS — Human-approved autonomous containment complete",
+      "resolutionOutcome": "SUCCESS \u2014 Human-approved autonomous containment complete",
       "mttrSeconds": "22.55",
       "riskScore": 75,
       "consensusPct": 75,
@@ -416,7 +616,7 @@
       "actionsTaken": [
         "HOST_ISOLATION|FW_BLOCK|CREDENTIAL_REVOKE|SESSION_TERMINATE|SHADOW_COPY_RESTORE"
       ],
-      "resolutionOutcome": "SUCCESS — Human-approved autonomous containment complete",
+      "resolutionOutcome": "SUCCESS \u2014 Human-approved autonomous containment complete",
       "mttrSeconds": "19852.26",
       "riskScore": 100,
       "consensusPct": 100,
@@ -441,7 +641,7 @@
       "actionsTaken": [
         "HOST_ISOLATION|FW_BLOCK|CREDENTIAL_REVOKE|SESSION_TERMINATE|SHADOW_COPY_RESTORE"
       ],
-      "resolutionOutcome": "SUCCESS — Autonomous containment complete",
+      "resolutionOutcome": "SUCCESS \u2014 Autonomous containment complete",
       "mttrSeconds": "44.89",
       "riskScore": 75,
       "consensusPct": 75,
@@ -465,7 +665,7 @@
       "actionsTaken": [
         "HOST_ISOLATION|FW_BLOCK|CREDENTIAL_REVOKE|SESSION_TERMINATE|SHADOW_COPY_RESTORE"
       ],
-      "resolutionOutcome": "SUCCESS — Autonomous containment complete",
+      "resolutionOutcome": "SUCCESS \u2014 Autonomous containment complete",
       "mttrSeconds": "43.83",
       "riskScore": 75,
       "consensusPct": 75,
@@ -489,7 +689,7 @@
       "actionsTaken": [
         "HOST_ISOLATION|FW_BLOCK|CREDENTIAL_REVOKE|SESSION_TERMINATE|SHADOW_COPY_RESTORE"
       ],
-      "resolutionOutcome": "SUCCESS — Autonomous containment complete",
+      "resolutionOutcome": "SUCCESS \u2014 Autonomous containment complete",
       "mttrSeconds": "44.06",
       "riskScore": 50,
       "consensusPct": 50,
@@ -511,7 +711,7 @@
       "actionsTaken": [
         "HOST_ISOLATION|FW_BLOCK|CREDENTIAL_REVOKE|SESSION_TERMINATE|SHADOW_COPY_RESTORE"
       ],
-      "resolutionOutcome": "SUCCESS — Autonomous containment complete",
+      "resolutionOutcome": "SUCCESS \u2014 Autonomous containment complete",
       "mttrSeconds": "41.67",
       "riskScore": 75,
       "consensusPct": 75,
@@ -528,6 +728,141 @@
   ],
   "agentWeights": {},
   "auditLog": [
+    {
+      "timestamp": "2026-09-13T01:26:43Z",
+      "action": "INVESTIGATION_COMPLETE",
+      "details": "[SIM-001] Status=CONTAINED Risk=85 Consensus=50% Latency=11.19s TTPs=['T1059.001', 'T1486', 'T1490']"
+    },
+    {
+      "timestamp": "2026-09-13T01:26:32Z",
+      "action": "ALERT_INGEST",
+      "details": "[SIM-001] LockBit 3.0 Ransomware Outbreak Attempt"
+    },
+    {
+      "timestamp": "2026-09-13T01:26:30Z",
+      "action": "INVESTIGATION_COMPLETE",
+      "details": "[SIM-001] Status=CONTAINED Risk=85 Consensus=50% Latency=15.34s TTPs=['T1059.001', 'T1486', 'T1490']"
+    },
+    {
+      "timestamp": "2026-09-13T01:26:15Z",
+      "action": "ALERT_INGEST",
+      "details": "[SIM-001] LockBit 3.0 Ransomware Outbreak Attempt"
+    },
+    {
+      "timestamp": "2026-09-13T01:25:44Z",
+      "action": "INVESTIGATION_COMPLETE",
+      "details": "[SIM-004] Status=CONTAINED Risk=85 Consensus=50% Latency=8.64s TTPs=[]"
+    },
+    {
+      "timestamp": "2026-09-13T01:25:35Z",
+      "action": "ALERT_INGEST",
+      "details": "[SIM-004] Covert Telemetry Harvester & Browser Credential Spyware"
+    },
+    {
+      "timestamp": "2026-09-13T01:25:33Z",
+      "action": "INVESTIGATION_COMPLETE",
+      "details": "[HARVEST-6AA5AE2B] Status=CONTAINED Risk=85 Consensus=50% Latency=8.56s TTPs=[]"
+    },
+    {
+      "timestamp": "2026-09-13T01:25:25Z",
+      "action": "ALERT_INGEST",
+      "details": "[HARVEST-6AA5AE2B] Unauthorized Credential Harvester & Outbound Telemetry Siphon"
+    },
+    {
+      "timestamp": "2026-09-13T01:24:22Z",
+      "action": "INVESTIGATION_COMPLETE",
+      "details": "[SIM-004] Status=CONTAINED Risk=85 Consensus=50% Latency=9.21s TTPs=[]"
+    },
+    {
+      "timestamp": "2026-09-13T01:24:13Z",
+      "action": "ALERT_INGEST",
+      "details": "[SIM-004] Covert Telemetry Harvester & Browser Credential Spyware"
+    },
+    {
+      "timestamp": "2026-09-13T01:23:21Z",
+      "action": "INVESTIGATION_COMPLETE",
+      "details": "[HARVEST-6AA5ADA7] Status=CONTAINED Risk=85 Consensus=50% Latency=8.0s TTPs=[]"
+    },
+    {
+      "timestamp": "2026-09-13T01:23:13Z",
+      "action": "ALERT_INGEST",
+      "details": "[HARVEST-6AA5ADA7] Unauthorized Credential Harvester & Outbound Telemetry Siphon"
+    },
+    {
+      "timestamp": "2026-09-13T01:04:33Z",
+      "action": "INVESTIGATION_COMPLETE",
+      "details": "[SIM-002] Status=CONTAINED Risk=85 Consensus=50% Latency=9.34s TTPs=[]"
+    },
+    {
+      "timestamp": "2026-09-13T01:04:24Z",
+      "action": "ALERT_INGEST",
+      "details": "[SIM-002] AWS Cloud Credential Compromise & S3 Mass-Download"
+    },
+    {
+      "timestamp": "2026-09-13T01:04:22Z",
+      "action": "INVESTIGATION_COMPLETE",
+      "details": "[SIM-002] Status=CONTAINED Risk=85 Consensus=50% Latency=6.98s TTPs=[]"
+    },
+    {
+      "timestamp": "2026-09-13T01:04:15Z",
+      "action": "ALERT_INGEST",
+      "details": "[SIM-002] AWS Cloud Credential Compromise & S3 Mass-Download"
+    },
+    {
+      "timestamp": "2026-09-13T00:59:08Z",
+      "action": "INVESTIGATION_COMPLETE",
+      "details": "[LIVE-TEST-001] Status=CONTAINED Risk=85 Consensus=50% Latency=12.04s TTPs=['T1059.001']"
+    },
+    {
+      "timestamp": "2026-09-13T00:58:56Z",
+      "action": "ALERT_INGEST",
+      "details": "[LIVE-TEST-001] Ransomware Canary File Deletion + Encoded PowerShell Downloader"
+    },
+    {
+      "timestamp": "2026-09-13T00:58:07Z",
+      "action": "INVESTIGATION_COMPLETE",
+      "details": "[LIVE-TEST-001] Status=FAILED Risk=85 Consensus=50% Latency=8.57s TTPs=['T1059.001']"
+    },
+    {
+      "timestamp": "2026-09-13T00:57:58Z",
+      "action": "ALERT_INGEST",
+      "details": "[LIVE-TEST-001] Ransomware Canary File Deletion + Encoded PowerShell Downloader"
+    },
+    {
+      "timestamp": "2026-09-13T00:57:29Z",
+      "action": "INVESTIGATION_COMPLETE",
+      "details": "[LIVE-TEST-001] Status=FAILED Risk=85 Consensus=50% Latency=29.88s TTPs=['T1059.001']"
+    },
+    {
+      "timestamp": "2026-09-13T00:56:59Z",
+      "action": "ALERT_INGEST",
+      "details": "[LIVE-TEST-001] Ransomware Canary File Deletion + Encoded PowerShell Downloader"
+    },
+    {
+      "timestamp": "2026-09-13T00:42:29Z",
+      "action": "INVESTIGATION_COMPLETE",
+      "details": "[LIVE-TEST-001] Status=FAILED Risk=100 Consensus=100% Latency=180.15s TTPs=['T1059.001']"
+    },
+    {
+      "timestamp": "2026-09-13T00:39:29Z",
+      "action": "ALERT_INGEST",
+      "details": "[LIVE-TEST-001] Ransomware Canary File Deletion + Encoded PowerShell Downloader"
+    },
+    {
+      "timestamp": "2026-09-12T23:57:29Z",
+      "action": "INVESTIGATION_COMPLETE",
+      "details": "[LIVE-TEST-001] Status=CONTAINED Risk=100/100 Consensus=100% Latency=89.24s TTPs=['T1059.001']"
+    },
+    {
+      "timestamp": "2026-09-12T23:55:59Z",
+      "action": "ALERT_INGEST",
+      "details": "[LIVE-TEST-001] Ransomware Canary File Deletion + Encoded PowerShell Downloader"
+    },
+    {
+      "timestamp": "2026-09-12T23:54:53Z",
+      "action": "ALERT_INGEST",
+      "details": "[LIVE-TEST-001] Ransomware Canary File Deletion + Encoded PowerShell Downloader"
+    },
     {
       "ts": "2026-09-12T17:53:49.756Z",
       "type": "INVESTIGATION",
@@ -935,7 +1270,7 @@
     }
   ],
   "stats": {
-    "incidents": 20,
+    "incidents": 33,
     "llmRuns": 13,
     "rulesRuns": 7,
     "totalToolCalls": 145

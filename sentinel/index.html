@@ -50,21 +50,18 @@
                 </div>
             </div>
 
-            <!-- Header Action Controls -->
+            <!-- Mission-Critical Defender Header Actions -->
             <div class="header-actions">
-                <button class="btn btn-matrix-green pulse-btn" id="btn-showcase">
-                    <i class="fa-solid fa-graduation-cap"></i> <span id="lbl-showcase">SHOWCASE</span>
+                <button class="btn btn-matrix-green btn-sm" id="btn-force-host-scan">
+                    <i class="fa-solid fa-arrows-rotate"></i> REFRESH SENSORS
                 </button>
-                <button class="btn btn-matrix-outline" id="btn-toggle-audio">
+                <button class="btn btn-matrix-outline btn-sm" id="btn-soar-rollback">
+                    <i class="fa-solid fa-rotate-left"></i> ROLLBACK FIREWALL
+                </button>
+                <button class="btn btn-matrix-outline btn-sm" id="btn-toggle-audio">
                     <i class="fa-solid fa-volume-high"></i> <span id="lbl-audio-status">AUDIO: ON</span>
                 </button>
-                <button class="btn btn-matrix-red pulse-btn" id="btn-trigger-attack">
-                    <i class="fa-solid fa-bolt"></i> LAUNCH SIMULATOR
-                </button>
-                <button class="btn btn-matrix-outline" id="btn-soar-rollback">
-                    <i class="fa-solid fa-rotate-left"></i> ROLLBACK SOAR
-                </button>
-                <button class="btn btn-matrix-green" id="btn-export-report">
+                <button class="btn btn-matrix-green btn-sm" id="btn-export-report">
                     <i class="fa-solid fa-file-code"></i> EXECUTIVE REPORT
                 </button>
             </div>
@@ -76,7 +73,7 @@
                 <i class="fa-solid fa-gauge-high"></i> COMMAND CENTER
             </button>
             <button class="tab-btn" data-tab="tab-swarm">
-                <i class="fa-solid fa-sitemap"></i> AGENT SWARM <span class="badge badge-matrix-green" id="badge-agent-activity">8 ACTIVE</span>
+                <i class="fa-solid fa-sitemap"></i> AGENT SWARM <span class="badge badge-matrix-green" id="badge-agent-activity">9 ACTIVE</span>
             </button>
             <button class="tab-btn" data-tab="tab-twin">
                 <i class="fa-solid fa-network-wired"></i> DIGITAL SOC TWIN & PCAP
@@ -93,9 +90,6 @@
             <button class="tab-btn" data-tab="tab-host-watchdog">
                 <i class="fa-solid fa-microchip"></i> HOST EDR & WATCHDOG <span class="badge badge-matrix-green" id="badge-watchdog-count">LIVE SENSORS</span>
             </button>
-            <button class="tab-btn" data-tab="tab-simulator">
-                <i class="fa-solid fa-vial"></i> PURPLE TEAM SIM
-            </button>
         </nav>
 
         <!-- Main Workspace Area -->
@@ -110,16 +104,13 @@
                         <i class="fa-solid fa-shield-cat"></i>
                     </div>
                     <div class="banner-info">
-                        <h3 id="threat-title">> SYSTEM STATUS: MONITORING ALL ENCLAVES</h3>
-                        <p id="threat-desc">Multi-agent orchestrator actively scanning SIEM feeds, cloud logs, and endpoint telemetry.</p>
+                        <h3 id="threat-title">> SYSTEM STATUS: ACTIVE DEFENSE WATCHDOG ENFORCED</h3>
+                        <p id="threat-desc">Multi-agent orchestrator actively monitoring live endpoint sockets, Windows registry hooks, and SIEM alert telemetry.</p>
                         <div class="banner-tags" id="threat-tags">
                             <span class="matrix-pill">SIEM: CONNECTED</span>
-                            <span class="matrix-pill">PLAYBOOKS: READY</span>
-                            <span class="matrix-pill" id="pill-engine">ENGINE: INITIALIZING</span>
-                            <select id="llm-provider-select" class="matrix-select" style="margin-left: 10px; background: #001100; color: #00ff00; border: 1px solid #00ff00; font-family: monospace; padding: 2px 5px; cursor: pointer;">
-                                <option value="ollama">LOCAL (Ollama)</option>
-                                <option value="gemini">API (Gemini)</option>
-                            </select>
+                            <span class="matrix-pill">PLAYBOOKS: SYNTHESIZED</span>
+                            <span class="matrix-pill" id="pill-engine">ENGINE: FASTAPI LOCAL-FIRST</span>
+                            <span class="matrix-pill"><i class="fa-solid fa-satellite-dish"></i> REDTEAM LISTENER: PORT 8090</span>
                         </div>
                     </div>
                     <div class="banner-metrics">
@@ -128,8 +119,8 @@
                             <span class="lbl">THREAT SEVERITY</span>
                         </div>
                         <div class="metric-block">
-                            <span class="num" id="active-agents-count">8</span>
-                            <span class="lbl">AGENTS DEPLOYED</span>
+                            <span class="num" id="active-agents-count">9</span>
+                            <span class="lbl">AGENTS ACTIVE</span>
                         </div>
                         <div class="metric-block">
                             <span class="num" id="mttr-timer-val">0.0s</span>
@@ -138,19 +129,16 @@
                     </div>
                 </div>
 
-                <!-- Slim Simulation Toolbar -->
-                <div class="sim-toolbar">
-                    <div class="sim-toolbar-group">
-                        <span class="sim-toolbar-label"><i class="fa-solid fa-sliders"></i> SIMULATION</span>
-                        <button class="btn btn-matrix-green btn-sm" id="btn-sim-play"><i class="fa-solid fa-play"></i> PLAY</button>
-                        <button class="btn btn-matrix-outline btn-sm" id="btn-sim-pause"><i class="fa-solid fa-pause"></i> PAUSE</button>
-                        <button class="btn btn-matrix-outline btn-sm" id="btn-sim-step"><i class="fa-solid fa-forward-step"></i> STEP</button>
+                <!-- Mission-Critical Live Defense Telemetry Strip -->
+                <div class="host-defense-strip" style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,255,136,0.04); border:1px solid var(--matrix-card-border); border-radius:6px; padding:0.6rem 1rem; margin-bottom:1rem; font-family:'JetBrains Mono',monospace; font-size:0.8rem;">
+                    <div style="display:flex; align-items:center; gap:1.25rem;">
+                        <span style="color:var(--matrix-green); font-weight:700;"><i class="fa-solid fa-satellite"></i> LIVE EDR HOOKS</span>
+                        <span class="text-muted">HOST: <strong style="color:#fff;">DESKTOP-TUESDAY</strong></span>
+                        <span class="text-muted">SUBSYSTEM: <strong style="color:#38bdf8;">KERNEL FIREWALL & REGISTRY SENSORS</strong></span>
                     </div>
-                    <div class="sim-toolbar-group">
-                        <span class="text-muted">SPEED</span>
-                        <button class="btn btn-matrix-outline btn-sm btn-speed active" data-speed="1">1x</button>
-                        <button class="btn btn-matrix-outline btn-sm btn-speed" data-speed="2">2x</button>
-                        <button class="btn btn-matrix-outline btn-sm btn-speed" data-speed="5">5x</button>
+                    <div style="display:flex; align-items:center; gap:1rem;">
+                        <span class="matrix-pill" id="pill-watchdog-state"><i class="fa-solid fa-circle pulse" style="font-size:0.6rem; color:#00ff88;"></i> LISTENING ON PORT 8090</span>
+                        <span class="text-muted">INGESTION: <strong style="color:#00ff88;">REAL-TIME SSE</strong></span>
                     </div>
                 </div>
 
@@ -269,7 +257,7 @@
                             <h3><i class="fa-solid fa-gavel"></i> CONSENSUS & CONFIDENCE</h3>
                         </div>
                         <div class="card-body" id="consensus-panel">
-                            <div class="empty-state">Run an attack simulation to view agent consensus voting results and weighted confidence scores.</div>
+                            <div class="empty-state">Awaiting incident telemetry from Host EDR sensors or RedTeam Attack Console (Port 8095)...</div>
                         </div>
                     </div>
 
@@ -292,7 +280,7 @@
                             <span class="matrix-pill">BONUS: AI-POWERED</span>
                         </div>
                         <div class="card-body" id="prediction-panel">
-                            <div class="empty-state">Predictions will appear after running an attack simulation.</div>
+                            <div class="empty-state">Predictive attack progression will generate upon real-time incident detection.</div>
                         </div>
                     </div>
 
@@ -357,7 +345,7 @@
                             <span class="matrix-indicator active">STREAMING</span>
                         </div>
                         <div class="card-body scrollable" style="max-height:220px; font-family:var(--font-mono); font-size:0.72rem;" id="pcap-packet-stream">
-                            <div class="empty-state">Run an attack simulation to capture live network packets.</div>
+                            <div class="empty-state">Awaiting hostile network flows from Host EDR sensors or RedTeam drills...</div>
                         </div>
                     </div>
                 </div>
@@ -473,86 +461,7 @@
                 </div>
             </section>
 
-            <!-- ================= TAB 7: PURPLE TEAM SIMULATOR ================= -->
-            <section id="tab-simulator" class="tab-content">
-                <div class="matrix-main-grid">
-                    <div class="matrix-card col-6">
-                        <div class="card-header">
-                            <h3><i class="fa-solid fa-vial"></i> PRE-CONFIGURED ATTACK SCENARIOS</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="scenario-card" data-scenario="ransomware">
-                                <div class="scenario-header">
-                                    <h4><i class="fa-solid fa-biohazard text-red"></i> LockBit 3.0 Ransomware Outbreak</h4>
-                                    <span class="badge badge-matrix-red">CRITICAL</span>
-                                </div>
-                                <p>Spearphishing payload execution -&gt; LSASS Memory Dumping -&gt; Volume Shadow Copy Deletion -&gt; AES File Encryption.</p>
-                                <button class="btn btn-matrix-red btn-sm btn-run-scenario" data-scenario="ransomware">
-                                    <i class="fa-solid fa-play"></i> EXECUTE SCENARIO
-                                </button>
-                            </div>
-
-                            <div class="scenario-card" data-scenario="cloud_exfil">
-                                <div class="scenario-header">
-                                    <h4><i class="fa-solid fa-cloud-arrow-down text-amber"></i> AWS S3 Exfiltration via Compromised IAM</h4>
-                                    <span class="badge badge-matrix-amber">HIGH</span>
-                                </div>
-                                <p>Leaked access key -&gt; STS AssumeRole -&gt; S3 ListBuckets -&gt; Bulk KMS Data Downloading.</p>
-                                <button class="btn btn-matrix-outline btn-sm btn-run-scenario" data-scenario="cloud_exfil">
-                                    <i class="fa-solid fa-play"></i> EXECUTE SCENARIO
-                                </button>
-                            </div>
-
-                            <div class="scenario-card" data-scenario="apt_supply_chain">
-                                <div class="scenario-header">
-                                    <h4><i class="fa-solid fa-cube text-bright-green"></i> APT Supply Chain Trojan (SUNBURST Variant)</h4>
-                                    <span class="badge badge-matrix-red">CRITICAL</span>
-                                </div>
-                                <p>Trojanized DLL update -&gt; Domain Controller Authentication -&gt; DNS Tunneling C2 Beaconing.</p>
-                                <button class="btn btn-matrix-red btn-sm btn-run-scenario" data-scenario="apt_supply_chain">
-                                    <i class="fa-solid fa-play"></i> EXECUTE SCENARIO
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="matrix-card col-6">
-                        <div class="card-header">
-                            <h3><i class="fa-solid fa-terminal"></i> SYNTHETIC ALERT INJECTOR</h3>
-                        </div>
-                        <div class="card-body">
-                            <form id="form-custom-alert">
-                                <div class="form-group">
-                                    <label>ALERT SOURCE ENCLAVE</label>
-                                    <select id="alert-source" class="form-control">
-                                        <option value="CrowdStrike EDR">CrowdStrike EDR (Endpoint)</option>
-                                        <option value="AWS GuardDuty">AWS GuardDuty (Cloud)</option>
-                                        <option value="Palo Alto Firewall">Palo Alto NextGen Firewall (Network)</option>
-                                        <option value="Microsoft Entra ID">Microsoft Entra ID (Identity)</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>TARGET ASSET / IP</label>
-                                    <input type="text" id="alert-target" class="form-control" value="FIN-SERVER-04 (192.168.10.45)">
-                                </div>
-                                <div class="form-group">
-                                    <label>DETECTED SUSPICIOUS INDICATOR (IOC)</label>
-                                    <input type="text" id="alert-ioc" class="form-control" value="185.220.101.5 (Tor Exit Node / C2)">
-                                </div>
-                                <div class="form-group">
-                                    <label>RAW EVENT PAYLOAD LOG</label>
-                                    <textarea id="alert-payload" class="form-control" rows="4">Process powershell.exe spawned encoded command: powershell -enc SQBFAFgAKABOAGUAdw... connecting to 185.220.101.5:443</textarea>
-                                </div>
-                                <button type="submit" class="btn btn-matrix-green btn-block">
-                                    <i class="fa-solid fa-paper-plane"></i> INJECT INTO AGENT SWARM
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ================= TAB: HOST EDR & SENSORS ================= -->
+            <!-- ================= TAB 7: HOST EDR & SENSORS ================= -->
             <section id="tab-host-watchdog" class="tab-content">
                 <div class="matrix-grid">
                     <!-- Host Control & Health Bar -->
@@ -623,6 +532,8 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+
                     <!-- Active Firewall Rules & 1-Click Rollback -->
                     <div class="matrix-card col-12" style="grid-column: span 12; margin-top: 1rem;">
                         <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
@@ -642,7 +553,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="tbody-host-firewall-rules">
-                                    <tr><td colspan="6" style="text-align: center; color: #888;">No active firewall rules injected yet. Run an attack drill or use manual block.</td></tr>
+                                    <tr><td colspan="6" style="text-align: center; color: #888;">No active firewall rules injected yet. Automated rules deploy via netsh when hostile threats are contained.</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -676,9 +587,7 @@
     <script src="mitre.js"></script>
     <script src="network_vis.js"></script>
     <script src="agents.js"></script>
-    <script src="attack_sim.js"></script>
     <script src="app.js"></script>
-    <script src="showcase.js"></script>
 
 </body>
 </html>

@@ -1,0 +1,19 @@
+# ==============================================================================
+# GitHub Linguist Configuration for Project TUESDAY
+# Ensures GitHub accurately classifies TUESDAY as a Python AI/SOC platform
+# ==============================================================================
+
+# 1. Vendor AI Workspace Skills and Test Frameworks
+.agents/** linguist-vendored
+*.cjs linguist-vendored
+*.test.cjs linguist-vendored
+
+# 2. Mark Frontend Dashboard Static Web Assets as Vendored / Excluded from Language Stats
+sentinel/** linguist-vendored
+sentinel/styles.css linguist-vendored
+sentinel/index.html linguist-vendored
+sentinel/*.js linguist-vendored
+
+# 3. Documentation and Web UI Markup
+redteam/index.html linguist-documentation
+*.md linguist-documentation

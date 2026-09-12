@@ -68,7 +68,9 @@ Output valid JSON ONLY with this format:
         }
 
         try:
-            resp = requests.post(GEMINI_URL, headers=headers, json=payload, timeout=20)
+            resp = requests.post(GEMINI_URL, headers=headers, json=payload, timeout=6)
+            if resp.status_code == 429:
+                raise RuntimeError("Gemini quota exhausted")
             resp.raise_for_status()
             content = resp.json()["choices"][0]["message"]["content"].strip()
             if "```json" in content:
