@@ -1,6 +1,190 @@
 {
   "episodicMemory": [
     {
+      "id": "ep-1789248418",
+      "title": "Covert Telemetry Harvester & Browser Credential Spyware",
+      "host": "DEV-WORKSTATION-09",
+      "ioc": "185.220.101.99",
+      "process": "analytics_daemon.exe",
+      "timestamp": "2026-09-13T02:56:58Z",
+      "status": "CONTAINED",
+      "riskScore": 85,
+      "consensusPct": 50,
+      "ttpsDetected": [],
+      "critic": "CONFIRMED_THREAT",
+      "latencySec": 9.61
+    },
+    {
+      "id": "SIM-004",
+      "title": "Covert Telemetry Harvester & Browser Credential Spyware",
+      "host": "DEV-WORKSTATION-09 (192.168.20.14)",
+      "ioc": "185.220.101.99",
+      "process": "",
+      "timestamp": "2026-09-13T02:56:21Z",
+      "status": "CONTAINED",
+      "riskScore": 85,
+      "consensusPct": 50,
+      "ttpsDetected": [],
+      "critic": "CONFIRMED_THREAT",
+      "latencySec": 2.51
+    },
+    {
+      "id": "HARVEST-6AA5C36B",
+      "title": "Unauthorized Credential Harvester & Outbound Telemetry Siphon",
+      "host": "DEV-WORKSTATION-09 (192.168.20.14)",
+      "ioc": "185.220.101.99",
+      "process": "",
+      "timestamp": "2026-09-13T02:56:11Z",
+      "status": "CONTAINED",
+      "riskScore": 85,
+      "consensusPct": 50,
+      "ttpsDetected": [],
+      "critic": "CONFIRMED_THREAT",
+      "latencySec": 6.22
+    },
+    {
+      "id": "ep-1789248240",
+      "title": "Air-Gap Pure Rules Fast Drill",
+      "host": "DESKTOP-TUESDAY",
+      "ioc": "10.0.0.99",
+      "process": "cmd.exe",
+      "timestamp": "2026-09-13T02:54:00Z",
+      "status": "CONTAINED",
+      "riskScore": 85,
+      "consensusPct": 50,
+      "ttpsDetected": [],
+      "critic": "CONFIRMED_THREAT",
+      "latencySec": 3.23
+    },
+    {
+      "id": "ep-1789248224",
+      "title": "Air-Gap Offline Test Drill",
+      "host": "DESKTOP-TUESDAY",
+      "ioc": "198.51.100.22",
+      "process": "mimikatz.exe",
+      "timestamp": "2026-09-13T02:53:44Z",
+      "status": "CONTAINED",
+      "riskScore": 85,
+      "consensusPct": 50,
+      "ttpsDetected": [],
+      "critic": "CONFIRMED_THREAT",
+      "latencySec": 6.27
+    },
+    {
+      "id": "ep-1789248204",
+      "title": "Suspicious C2 Beacon from PowerShell",
+      "host": "DESKTOP-TUESDAY",
+      "ioc": "185.220.101.5",
+      "process": "powershell.exe",
+      "timestamp": "2026-09-13T02:53:24Z",
+      "status": "CONTAINED",
+      "riskScore": 85,
+      "consensusPct": 50,
+      "ttpsDetected": [
+        "T1059.001"
+      ],
+      "critic": "CONFIRMED_THREAT",
+      "latencySec": 10.65
+    },
+    {
+      "id": "ep-1789248129",
+      "title": "Suspicious C2 Beacon from PowerShell",
+      "host": "DESKTOP-TUESDAY",
+      "ioc": "185.220.101.5",
+      "process": "powershell.exe",
+      "timestamp": "2026-09-13T02:52:09Z",
+      "status": "CONTAINED",
+      "riskScore": 85,
+      "consensusPct": 50,
+      "ttpsDetected": [
+        "T1059.001"
+      ],
+      "critic": "CONFIRMED_THREAT",
+      "latencySec": 32.07
+    },
+    {
+      "id": "SIM-004",
+      "title": "Covert Telemetry Harvester & Browser Credential Spyware",
+      "host": "DEV-WORKSTATION-09 (192.168.20.14)",
+      "ioc": "185.220.101.99",
+      "process": "",
+      "timestamp": "2026-09-13T02:38:18Z",
+      "status": "CONTAINED",
+      "riskScore": 85,
+      "consensusPct": 50,
+      "ttpsDetected": [],
+      "critic": "CONFIRMED_THREAT",
+      "latencySec": 6.32
+    },
+    {
+      "id": "SIM-002",
+      "title": "AWS Cloud Credential Compromise & S3 Mass-Download",
+      "host": "AWS-S3-PROD-LOGS (cloud-aws)",
+      "ioc": "193.142.146.35",
+      "process": "",
+      "timestamp": "2026-09-13T02:32:15Z",
+      "status": "CONTAINED",
+      "riskScore": 85,
+      "consensusPct": 50,
+      "ttpsDetected": [],
+      "critic": "CONFIRMED_THREAT",
+      "latencySec": 6.79
+    },
+    {
+      "id": "RANSOM-6AA5BDC2",
+      "title": "LockBit 3.0 Ransomware Outbreak & Shadow Copy Deletion",
+      "host": "FIN-SERVER-04 (192.168.10.45)",
+      "ioc": "185.220.101.5",
+      "process": "",
+      "timestamp": "2026-09-13T02:32:08Z",
+      "status": "CONTAINED",
+      "riskScore": 85,
+      "consensusPct": 50,
+      "ttpsDetected": [
+        "T1059.001",
+        "T1486",
+        "T1490"
+      ],
+      "critic": "CONFIRMED_THREAT",
+      "latencySec": 11.92
+    },
+    {
+      "id": "SIM-001",
+      "title": "LockBit 3.0 Ransomware Outbreak Attempt",
+      "host": "FIN-SERVER-04 (192.168.10.45)",
+      "ioc": "185.220.101.5",
+      "process": "",
+      "timestamp": "2026-09-13T01:50:18Z",
+      "status": "CONTAINED",
+      "riskScore": 85,
+      "consensusPct": 50,
+      "ttpsDetected": [
+        "T1059.001",
+        "T1486",
+        "T1490"
+      ],
+      "critic": "CONFIRMED_THREAT",
+      "latencySec": 15.66
+    },
+    {
+      "id": "SIM-001",
+      "title": "LockBit 3.0 Ransomware Outbreak Attempt",
+      "host": "FIN-SERVER-04 (192.168.10.45)",
+      "ioc": "185.220.101.5",
+      "process": "",
+      "timestamp": "2026-09-13T01:45:35Z",
+      "status": "CONTAINED",
+      "riskScore": 85,
+      "consensusPct": 50,
+      "ttpsDetected": [
+        "T1059.001",
+        "T1486",
+        "T1490"
+      ],
+      "critic": "CONFIRMED_THREAT",
+      "latencySec": 29.39
+    },
+    {
       "id": "SIM-001",
       "title": "LockBit 3.0 Ransomware Outbreak Attempt",
       "host": "FIN-SERVER-04 (192.168.10.45)",
@@ -729,6 +913,126 @@
   "agentWeights": {},
   "auditLog": [
     {
+      "timestamp": "2026-09-13T02:56:58Z",
+      "action": "INVESTIGATION_COMPLETE",
+      "details": "[?] Status=CONTAINED Risk=85 Consensus=50% Latency=9.61s TTPs=[] Tier=TIER_3_DETERMINISTIC"
+    },
+    {
+      "timestamp": "2026-09-13T02:56:48Z",
+      "action": "ALERT_INGEST",
+      "details": "[?] Covert Telemetry Harvester & Browser Credential Spyware"
+    },
+    {
+      "timestamp": "2026-09-13T02:56:21Z",
+      "action": "INVESTIGATION_COMPLETE",
+      "details": "[SIM-004] Status=CONTAINED Risk=85 Consensus=50% Latency=2.51s TTPs=[] Tier=TIER_3_DETERMINISTIC"
+    },
+    {
+      "timestamp": "2026-09-13T02:56:18Z",
+      "action": "ALERT_INGEST",
+      "details": "[SIM-004] Covert Telemetry Harvester & Browser Credential Spyware"
+    },
+    {
+      "timestamp": "2026-09-13T02:56:11Z",
+      "action": "INVESTIGATION_COMPLETE",
+      "details": "[HARVEST-6AA5C36B] Status=CONTAINED Risk=85 Consensus=50% Latency=6.22s TTPs=[] Tier=TIER_3_DETERMINISTIC"
+    },
+    {
+      "timestamp": "2026-09-13T02:56:05Z",
+      "action": "ALERT_INGEST",
+      "details": "[HARVEST-6AA5C36B] Unauthorized Credential Harvester & Outbound Telemetry Siphon"
+    },
+    {
+      "timestamp": "2026-09-13T02:54:00Z",
+      "action": "INVESTIGATION_COMPLETE",
+      "details": "[?] Status=CONTAINED Risk=85 Consensus=50% Latency=3.23s TTPs=[] Tier=TIER_3_DETERMINISTIC"
+    },
+    {
+      "timestamp": "2026-09-13T02:53:57Z",
+      "action": "ALERT_INGEST",
+      "details": "[?] Air-Gap Pure Rules Fast Drill"
+    },
+    {
+      "timestamp": "2026-09-13T02:53:44Z",
+      "action": "INVESTIGATION_COMPLETE",
+      "details": "[?] Status=CONTAINED Risk=85 Consensus=50% Latency=6.27s TTPs=[] Tier=TIER_3_DETERMINISTIC"
+    },
+    {
+      "timestamp": "2026-09-13T02:53:37Z",
+      "action": "ALERT_INGEST",
+      "details": "[?] Air-Gap Offline Test Drill"
+    },
+    {
+      "timestamp": "2026-09-13T02:53:24Z",
+      "action": "INVESTIGATION_COMPLETE",
+      "details": "[?] Status=CONTAINED Risk=85 Consensus=50% Latency=10.65s TTPs=['T1059.001'] Tier=TIER_3_DETERMINISTIC"
+    },
+    {
+      "timestamp": "2026-09-13T02:53:13Z",
+      "action": "ALERT_INGEST",
+      "details": "[?] Suspicious C2 Beacon from PowerShell"
+    },
+    {
+      "timestamp": "2026-09-13T02:52:09Z",
+      "action": "INVESTIGATION_COMPLETE",
+      "details": "[?] Status=CONTAINED Risk=85 Consensus=50% Latency=32.07s TTPs=['T1059.001'] Tier=TIER_3_DETERMINISTIC"
+    },
+    {
+      "timestamp": "2026-09-13T02:51:37Z",
+      "action": "ALERT_INGEST",
+      "details": "[?] Suspicious C2 Beacon from PowerShell"
+    },
+    {
+      "timestamp": "2026-09-13T02:38:18Z",
+      "action": "INVESTIGATION_COMPLETE",
+      "details": "[SIM-004] Status=CONTAINED Risk=85 Consensus=50% Latency=6.32s TTPs=[]"
+    },
+    {
+      "timestamp": "2026-09-13T02:38:11Z",
+      "action": "ALERT_INGEST",
+      "details": "[SIM-004] Covert Telemetry Harvester & Browser Credential Spyware"
+    },
+    {
+      "timestamp": "2026-09-13T02:32:15Z",
+      "action": "INVESTIGATION_COMPLETE",
+      "details": "[SIM-002] Status=CONTAINED Risk=85 Consensus=50% Latency=6.79s TTPs=[]"
+    },
+    {
+      "timestamp": "2026-09-13T02:32:08Z",
+      "action": "ALERT_INGEST",
+      "details": "[SIM-002] AWS Cloud Credential Compromise & S3 Mass-Download"
+    },
+    {
+      "timestamp": "2026-09-13T02:32:08Z",
+      "action": "INVESTIGATION_COMPLETE",
+      "details": "[RANSOM-6AA5BDC2] Status=CONTAINED Risk=85 Consensus=50% Latency=11.92s TTPs=['T1059.001', 'T1486', 'T1490']"
+    },
+    {
+      "timestamp": "2026-09-13T02:31:56Z",
+      "action": "ALERT_INGEST",
+      "details": "[RANSOM-6AA5BDC2] LockBit 3.0 Ransomware Outbreak & Shadow Copy Deletion"
+    },
+    {
+      "timestamp": "2026-09-13T01:50:18Z",
+      "action": "INVESTIGATION_COMPLETE",
+      "details": "[SIM-001] Status=CONTAINED Risk=85 Consensus=50% Latency=15.66s TTPs=['T1059.001', 'T1486', 'T1490']"
+    },
+    {
+      "timestamp": "2026-09-13T01:50:03Z",
+      "action": "ALERT_INGEST",
+      "details": "[SIM-001] LockBit 3.0 Ransomware Outbreak Attempt"
+    },
+    {
+      "timestamp": "2026-09-13T01:45:35Z",
+      "action": "INVESTIGATION_COMPLETE",
+      "details": "[SIM-001] Status=CONTAINED Risk=85 Consensus=50% Latency=29.39s TTPs=['T1059.001', 'T1486', 'T1490']"
+    },
+    {
+      "timestamp": "2026-09-13T01:45:06Z",
+      "action": "ALERT_INGEST",
+      "details": "[SIM-001] LockBit 3.0 Ransomware Outbreak Attempt"
+    },
+    {
       "timestamp": "2026-09-13T01:26:43Z",
       "action": "INVESTIGATION_COMPLETE",
       "details": "[SIM-001] Status=CONTAINED Risk=85 Consensus=50% Latency=11.19s TTPs=['T1059.001', 'T1486', 'T1490']"
@@ -1107,16 +1411,6 @@
       "ts": "2026-08-07T12:30:38.344Z",
       "type": "ALERT_INGEST",
       "details": "[SIM-001] LockBit 3.0 Ransomware Outbreak from CrowdStrike EDR"
-    },
-    {
-      "ts": "2026-08-07T12:12:30.364Z",
-      "type": "INVESTIGATION",
-      "details": "[SIM-001] CONTAINED in 41.67s, risk 75, engine=llm"
-    },
-    {
-      "ts": "2026-08-07T12:11:48.700Z",
-      "type": "ALERT_INGEST",
-      "details": "[SIM-001] LockBit 3.0 Ransomware Outbreak from CrowdStrike EDR"
     }
   ],
   "approvals": [
@@ -1270,7 +1564,7 @@
     }
   ],
   "stats": {
-    "incidents": 33,
+    "incidents": 45,
     "llmRuns": 13,
     "rulesRuns": 7,
     "totalToolCalls": 145

@@ -30,6 +30,7 @@ from engine.critic import AdversarialCritic
 from engine.hypotheses import run_ach
 from engine.store import store
 from engine.tools import isolate_host
+from engine.inference import inference_engine
 
 def _load_env():
     env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
@@ -68,9 +69,10 @@ def _synthesize_playbook(
     verdicts: Dict[str, Any],
     risk_score: int,
     ach_result: Dict[str, Any],
-    past_episodes: List[Dict[str, Any]]
+    past_episodes: List[Dict[str, Any]],
+    emit_log: Optional[Callable[[str, str, str], None]] = None
 ) -> Dict[str, Any]:
-    """Generate a dynamic, evidence-grounded incident response playbook via LLM."""
+    """Generate a dynamic, evidence-grounded incident response playbook via multi-tier inference."""
     all_ttps, kill_chain_stages = [], []
     for v in verdicts.values():
         all_ttps.extend(v.get("ttpsDetected", []))
@@ -101,16 +103,12 @@ Generate a specific, evidence-grounded incident response playbook. Output valid 
 }}"""
 
     try:
-        resp = requests.post(
-            GEMINI_URL,
-            headers={"Content-Type": "application/json", "Authorization": f"Bearer {GEMINI_API_KEY}"},
-            json={"model": "gemini-2.5-flash", "messages": [{"role": "user", "content": prompt}], "temperature": 0.1},
-            timeout=6
+        msg = inference_engine.call_chat_completion(
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.1,
+            emit_log=emit_log
         )
-        if resp.status_code == 429:
-            raise RuntimeError("Gemini quota exhausted")
-        resp.raise_for_status()
-        content = resp.json()["choices"][0]["message"]["content"].strip()
+        content = msg.get("content", "").strip()
         for fence in ["```json", "```"]:
             if fence in content:
                 content = content.split(fence)[1].split("```")[0].strip()
@@ -137,7 +135,7 @@ Generate a specific, evidence-grounded incident response playbook. Output valid 
                 "Review and revoke compromised credentials or tokens."
             ],
             "notificationTargets": ["CISO", "SOC Tier 2", "Legal/Compliance"],
-            "confidenceNote":     f"Auto-generated from {len(all_ttps)} TTPs and {risk_score}/100 risk."
+            "confidenceNote":     f"Auto-generated from {len(all_ttps)} TTPs and {risk_score}/100 risk via {inference_engine.last_active_tier}."
         }
 
 
@@ -294,7 +292,7 @@ class SwarmOrchestrator:
         if emit_log:
             emit_log("response", "SYNTHESIZING DYNAMIC INCIDENT RESPONSE PLAYBOOK...", "info")
 
-        playbook = _synthesize_playbook(alert, verdicts, risk_score, ach_result, past_episodes)
+        playbook = _synthesize_playbook(alert, verdicts, risk_score, ach_result, past_episodes, emit_log)
 
         if emit_log:
             emit_log("response",
@@ -355,7 +353,7 @@ class SwarmOrchestrator:
         elapsed_sec = round(time.time() - start_time, 2)
         store.add_audit("INVESTIGATION_COMPLETE",
             f"[{alert.get('id','?')}] Status={status} Risk={risk_score} "
-            f"Consensus={consensus_pct}% Latency={elapsed_sec}s TTPs={unique_ttps}")
+            f"Consensus={consensus_pct}% Latency={elapsed_sec}s TTPs={unique_ttps} Tier={inference_engine.last_active_tier}")
 
         result = {
             "status":            status,
@@ -363,6 +361,9 @@ class SwarmOrchestrator:
             "consensusPct":      consensus_pct,
             "weightedConfidence":weighted_conf,
             "latencySec":        elapsed_sec,
+            "inferenceTier":     inference_engine.last_active_tier,
+            "inferenceMode":     inference_engine.mode,
+            "inferenceReason":   inference_engine.last_tier_reason,
             "votes":             votes,
             "verdicts":          verdicts,
             "ach":               ach_result,

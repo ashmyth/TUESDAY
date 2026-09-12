@@ -19,14 +19,13 @@ def _load_env():
                     if k.strip() not in os.environ:
                         os.environ[k.strip()] = v.strip()
 
-_load_env()
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+from engine.inference import inference_engine
 
 class AdversarialCritic:
     """
     Stress-tests the primary swarm's consensus against benign enterprise behavior
     (e.g., IT software deployments, scheduled maintenance, system admin tasks).
+    Supports 3-tier inference hierarchy: Cloud API -> Local Offline SLM -> Deterministic fallback.
     """
     def __init__(self):
         self.name = "Adversarial Critic"
@@ -57,27 +56,19 @@ Output valid JSON ONLY with this format:
   "rationale": "<summary of the adversarial challenge>"
 }}"""
 
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {GEMINI_API_KEY}"
-        }
-        payload = {
-            "model": "gemini-2.5-flash",
-            "messages": [{"role": "user", "content": prompt}],
-            "temperature": 0.3
-        }
-
         try:
-            resp = requests.post(GEMINI_URL, headers=headers, json=payload, timeout=6)
-            if resp.status_code == 429:
-                raise RuntimeError("Gemini quota exhausted")
-            resp.raise_for_status()
-            content = resp.json()["choices"][0]["message"]["content"].strip()
-            if "```json" in content:
-                content = content.split("```json")[1].split("```")[0].strip()
-            elif "```" in content:
-                content = content.split("```")[1].split("```")[0].strip()
+            msg = inference_engine.call_chat_completion(
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.3,
+                emit_log=emit_log
+            )
+            content = msg.get("content", "").strip()
+            for fence in ["```json", "```"]:
+                if fence in content:
+                    content = content.split(fence)[1].split("```")[0].strip()
+                    break
             parsed = json.loads(content)
+            parsed["inferenceTier"] = inference_engine.last_active_tier
             if emit_log:
                 status_type = "success" if parsed.get("challengePassed") else "danger"
                 emit_log("critic", f"Adversarial Evaluation: {parsed.get('criticVerdict')} ({parsed.get('rationale')})", status_type)
@@ -88,7 +79,8 @@ Output valid JSON ONLY with this format:
                 "criticVerdict": "CONFIRMED_THREAT" if consensus_pct >= 50 else "POTENTIAL_FALSE_POSITIVE",
                 "counterEvidence": "Adversarial reflection verified non-standard parent-child process tree and unapproved outbound socket.",
                 "confidenceAdjustment": 5 if consensus_pct >= 50 else -10,
-                "rationale": "Critic reflection verified consensus indicators against administrative false alarm baseline."
+                "rationale": "Critic reflection verified consensus indicators against administrative false alarm baseline.",
+                "inferenceTier": "TIER_3_DETERMINISTIC"
             }
             if emit_log:
                 emit_log("critic", f"Critic Evaluation: {fallback['criticVerdict']}", "info")

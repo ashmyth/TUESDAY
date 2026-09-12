@@ -3,36 +3,343 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TUESDAY RedTeam — Adversary Attack Simulator</title>
+  <title>TUESDAY RedTeam â€” Adversary Attack Simulator</title>
+  <!-- Google Fonts: Plus Jakarta Sans + JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --bg: #0b0f19;
-      --card-bg: #111827;
-      --border: #1f2937;
-      --red: #ef4444;
-      --red-hover: #dc2626;
-      --accent: #f59e0b;
-      --text: #f3f4f6;
-      --muted: #9ca3af;
+      --bg-base: #06080D;
+      --bg-surface: #0B0E17;
+      --bg-card: rgba(13, 17, 26, 0.80);
+      --bg-card-hover: rgba(20, 26, 40, 0.92);
+      
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-card: rgba(255, 255, 255, 0.10);
+      --border-red: rgba(244, 63, 94, 0.4);
+      --inner-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.07), inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+      
+      --red: #F43F5E;
+      --red-hover: #E11D48;
+      --red-glow: rgba(244, 63, 94, 0.25);
+      --red-dim: rgba(244, 63, 94, 0.12);
+      
+      --amber: #F59E0B;
+      --amber-dim: rgba(245, 158, 11, 0.12);
+      --cyan: #38BDF8;
+      --cyan-dim: rgba(56, 189, 248, 0.12);
+      --emerald: #00E599;
+      --emerald-dim: rgba(0, 229, 153, 0.12);
+
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --text-dim: #7C8DB0;
+
+      --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 2rem; }
-    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 2rem; }
-    .logo { display: flex; align-items: center; gap: 0.75rem; font-size: 1.5rem; font-weight: 700; color: var(--red); }
-    .badge { background: rgba(239, 68, 68, 0.15); border: 1px solid var(--red); color: var(--red); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.5rem; }
-    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 0.75rem; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; transition: border-color 0.2s; }
-    .card:hover { border-color: var(--red); }
-    .card-title { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
-    .card-track { font-size: 0.75rem; color: var(--accent); margin-bottom: 0.75rem; font-weight: 500; }
-    .card-desc { font-size: 0.875rem; color: var(--muted); line-height: 1.5; margin-bottom: 1rem; }
-    .meta-box { background: rgba(0,0,0,0.3); border-radius: 0.5rem; padding: 0.75rem; font-size: 0.8rem; font-family: monospace; color: #d1d5db; margin-bottom: 1.25rem; word-break: break-all; }
-    .btn-launch { background: var(--red); color: white; border: none; padding: 0.75rem 1rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background 0.2s; }
-    .btn-launch:hover { background: var(--red-hover); }
-    .log-panel { margin-top: 2.5rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: 0.75rem; padding: 1.5rem; }
-    .log-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--muted); }
-    #logOutput { background: #000; border-radius: 0.5rem; padding: 1rem; font-family: monospace; font-size: 0.85rem; height: 180px; overflow-y: auto; color: #10b981; }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      background-color: var(--bg-base);
+      background-image: 
+        radial-gradient(ellipse 70% 40% at 50% -10%, rgba(244, 63, 94, 0.10), transparent),
+        radial-gradient(ellipse 50% 35% at 85% 20%, rgba(245, 158, 11, 0.05), transparent),
+        radial-gradient(ellipse 40% 40% at 10% 80%, rgba(56, 189, 248, 0.04), transparent);
+      background-attachment: fixed;
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      padding: 2rem;
+      min-height: 100vh;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+    }
+
+    .logo i {
+      color: var(--red);
+      font-size: 1.5rem;
+      filter: drop-shadow(0 0 10px rgba(244, 63, 94, 0.5));
+    }
+
+    .badge {
+      background: var(--red-dim);
+      border: 1px solid rgba(244, 63, 94, 0.35);
+      color: var(--red);
+      padding: 0.2rem 0.65rem;
+      border-radius: 9999px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .soc-status-chip {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      background: rgba(13, 17, 26, 0.7);
+      border: 1px solid var(--border-subtle);
+      padding: 0.4rem 0.85rem;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Live Host Execution Drills Panel (Double-Bezel) */
+    .bench-panel {
+      background: var(--bg-card);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      padding: 1.35rem 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--inner-highlight);
+    }
+
+    .bench-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.1rem;
+    }
+
+    .bench-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--amber);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      letter-spacing: -0.01em;
+    }
+
+    .bench-badge {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      background: rgba(255, 255, 255, 0.04);
+      padding: 0.2rem 0.55rem;
+      border-radius: 6px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-action {
+      font-family: var(--font-sans);
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.55rem 0.95rem;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid var(--border-subtle);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      text-decoration: none;
+      color: var(--text-muted);
+      background: #12151E;
+    }
+
+    .btn-action:active { transform: scale(0.98); }
+    .btn-action:focus-visible,
+    .btn-launch:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+
+    .btn-hostile { background: var(--red-dim); color: var(--red); border-color: rgba(244, 63, 94, 0.3); }
+    .btn-hostile:hover { background: rgba(244, 63, 94, 0.18); border-color: var(--red); box-shadow: 0 0 12px rgba(244, 63, 94, 0.25); }
+
+    .btn-attention { background: var(--amber-dim); color: var(--amber); border-color: rgba(245, 158, 11, 0.3); }
+    .btn-attention:hover { background: rgba(245, 158, 11, 0.18); border-color: var(--amber); box-shadow: 0 0 12px rgba(245, 158, 11, 0.2); }
+
+    .btn-dark { background: #12151E; border-color: var(--border-subtle); color: var(--text-muted); }
+    .btn-dark:hover { background: rgba(255, 255, 255, 0.08); color: var(--text-main); border-color: rgba(255, 255, 255, 0.16); }
+
+    .btn-trust { background: var(--cyan-dim); color: var(--cyan); border-color: rgba(56, 189, 248, 0.3); }
+    .btn-trust:hover { background: rgba(56, 189, 248, 0.18); border-color: var(--cyan); box-shadow: 0 0 12px rgba(56, 189, 248, 0.2); }
+
+    /* Scenario Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 1.5rem;
+    }
+
+    /* Scenario Card (Double-Bezel) */
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      padding: 1.4rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: var(--inner-highlight);
+    }
+
+    .card:hover {
+      border-color: var(--border-red);
+      box-shadow: var(--inner-highlight), 0 0 0 1px rgba(244, 63, 94, 0.22);
+    }
+
+    .card-track {
+      font-size: 0.68rem;
+      color: var(--amber);
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+      display: inline-block;
+      background: var(--amber-dim);
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.45rem;
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      color: var(--text-main);
+    }
+
+    .card-title i { color: var(--red); }
+
+    .card-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 1.1rem;
+    }
+
+    /* Intel Meta Box */
+    .meta-box {
+      background: rgba(8, 10, 15, 0.7);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 0.85rem;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: #CBD5E1;
+      margin-bottom: 1.25rem;
+      word-break: break-all;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .meta-box strong { color: var(--cyan); }
+
+    .btn-launch {
+      background: #BE123C;
+      color: #F8FAFC;
+      border: 1px solid rgba(244, 63, 94, 0.5);
+      padding: 0.7rem 1.1rem;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 14px rgba(244, 63, 94, 0.28);
+    }
+
+    .btn-launch:hover {
+      background: #E11D48;
+      box-shadow: 0 6px 20px rgba(244, 63, 94, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn-launch:active {
+      transform: scale(0.98);
+    }
+
+    /* Telemetry Log Panel */
+    .log-panel {
+      margin-top: 2.5rem;
+      background: var(--bg-card);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      padding: 1.35rem 1.5rem;
+      box-shadow: var(--inner-highlight);
+    }
+
+    .log-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      margin-bottom: 0.85rem;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .log-title i { color: var(--cyan); }
+
+    #logOutput {
+      background: rgba(6, 8, 13, 0.9);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 1rem 1.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      height: 190px;
+      overflow-y: auto;
+      color: #6EE7B7;
+      line-height: 1.6;
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.6);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -40,51 +347,55 @@
     <div class="logo">
       <i class="fa-solid fa-skull-crossbones"></i>
       TUESDAY RedTeam
-      <span class="badge">Purple-Team Simulator</span>
+      <span class="badge">Adversary Simulator</span>
     </div>
-    <div>
-      <span style="font-size: 0.85rem; color: var(--muted);">Target Sentinel SOC: <strong style="color: #60a5fa;">http://localhost:8090</strong></span>
+    <div class="soc-status-chip">
+      <i class="fa-solid fa-satellite-dish" style="color: var(--cyan);"></i>
+      <span>TARGET SENTINEL: <strong style="color: #F8FAFC;">http://localhost:8090</strong></span>
+      <span style="color: var(--emerald); font-weight: bold;">[ACTIVE]</span>
     </div>
   </header>
 
   <!-- Live Host Execution Drills Panel -->
-  <div style="background: var(--card-bg); border: 1px solid #374151; border-radius: 0.75rem; padding: 1.25rem; margin-bottom: 2rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-      <h3 style="font-size: 1.05rem; color: var(--accent);"><i class="fa-solid fa-bolt"></i> Live Host Drills (Execute on Real OS & Observe Sentinel Containment)</h3>
-      <span style="font-size: 0.8rem; color: var(--muted);">Track 4: Cybersecurity & Privacy Tested Live</span>
+  <div class="bench-panel">
+    <div class="bench-header">
+      <h3 class="bench-title"><i class="fa-solid fa-bolt"></i> Tactical Weaponization Bench (Real Host Drills)</h3>
+      <span class="bench-badge">Track 4: Sovereign Cybersecurity & Privacy</span>
     </div>
-    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-      <button class="btn-launch" style="background: #4f46e5;" onclick="triggerLiveDrill('privacy', 'Privacy Harvester (.env secrets reading + C2 beacon)')">
+    <div class="btn-group">
+      <button class="btn-action btn-hostile" onclick="triggerLiveDrill('privacy', 'Privacy Harvester (.env secrets reading + C2 beacon)')">
         <i class="fa-solid fa-user-secret"></i> 1. Run Live Privacy Harvester
       </button>
-      <button class="btn-launch" style="background: #374151;" onclick="triggerLiveDrill('privacy_clean', 'Clean Mock Secrets in Sandbox')">
-        <i class="fa-solid fa-broom"></i> Clean Privacy Sandbox
+      <button class="btn-action btn-dark" onclick="triggerLiveDrill('privacy_clean', 'Clean Mock Secrets in Sandbox')">
+        <i class="fa-solid fa-broom"></i> Clean Sandbox
       </button>
-      <button class="btn-launch" style="background: #059669;" onclick="triggerLiveDrill('registry_plant', 'Plant Canary Autostart Key (HKCU Run)')">
-        <i class="fa-solid fa-key"></i> 2. Plant Canary Registry Key
+      <button class="btn-action btn-attention" onclick="triggerLiveDrill('registry_plant', 'Plant Canary Autostart Key (HKCU Run)')">
+        <i class="fa-solid fa-key"></i> 2. Plant Registry Hook
       </button>
-      <button class="btn-launch" style="background: #374151;" onclick="triggerLiveDrill('registry_clean', 'Clean Canary Registry Key')">
-        <i class="fa-solid fa-trash"></i> Clean Registry Key
+      <button class="btn-action btn-dark" onclick="triggerLiveDrill('registry_clean', 'Clean Canary Registry Key')">
+        <i class="fa-solid fa-trash"></i> Clean Registry
       </button>
-      <button class="btn-launch" style="background: #dc2626;" onclick="triggerLiveDrill('ransomware', 'LockBit File Rename & Canary Encryption')">
-        <i class="fa-solid fa-file-shield"></i> 3. Run Live Ransomware Staging
+      <button class="btn-action btn-hostile" onclick="triggerLiveDrill('ransomware', 'LockBit File Rename & Canary Encryption')">
+        <i class="fa-solid fa-file-shield"></i> 3. Run Ransomware Drill
       </button>
-      <button class="btn-launch" style="background: #374151;" onclick="triggerLiveDrill('ransomware_clean', 'Clean Ransomware Canary Files')">
-        <i class="fa-solid fa-eraser"></i> Clean Ransomware Canaries
+      <button class="btn-action btn-dark" onclick="triggerLiveDrill('ransomware_clean', 'Clean Ransomware Canary Files')">
+        <i class="fa-solid fa-eraser"></i> Clean Canaries
       </button>
-      <a href="http://localhost:8090" target="_blank" class="btn-launch" style="background: #0284c7; text-decoration: none;">
-        <i class="fa-solid fa-arrow-up-right-from-square"></i> View Sentinel SOC Console (Port 8090)
+      <a href="http://localhost:8090" target="_blank" class="btn-action btn-trust">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Sentinel SOC (:8090)
       </a>
     </div>
   </div>
 
+  <!-- Scenario Cards Grid -->
   <div class="grid" id="scenariosGrid">
     <!-- Populated by JS -->
   </div>
 
+  <!-- Real-time Adversary Logs -->
   <div class="log-panel">
     <div class="log-title"><i class="fa-solid fa-terminal"></i> Adversary Telemetry Stream</div>
-    <div id="logOutput">System initialized. Select an attack scenario or live host drill above...</div>
+    <div id="logOutput">>_ System initialized. Select an attack scenario or live host drill above...</div>
   </div>
 
   <script>
@@ -105,7 +416,7 @@
         });
         const data = await res.json();
         if (data.ok) {
-          log(`[LIVE DRILL SUCCESS] "${drillName}" completed! Result: ${JSON.stringify(data.result || data)}`);
+          log(`[LIVE DRILL SUCCESS] "${drillName}" executed! Check Sentinel SOC (:8090) for live detection.`);
         } else {
           log(`[LIVE DRILL ERROR] ${data.error}`);
         }
@@ -126,17 +437,17 @@
           card.className = 'card';
           card.innerHTML = `
             <div>
-              <div class="card-track">${s.track}</div>
-              <div class="card-title"><i class="fa-solid fa-crosshairs" style="color:var(--red);"></i> ${s.title}</div>
+              <div class="card-track">${s.track || 'ADVANCED THREAT'}</div>
+              <div class="card-title"><i class="fa-solid fa-crosshairs"></i> ${s.title}</div>
               <div class="card-desc">${s.description}</div>
               <div class="meta-box">
-                <div><strong>Target:</strong> ${s.targetHost}</div>
+                <div><strong>TARGET:</strong> ${s.targetHost}</div>
                 <div><strong>IOC:</strong> ${s.ioc}</div>
-                <div><strong>TTP:</strong> ${s.mitreTtp}</div>
+                <div><strong>MITRE:</strong> ${s.mitreTtp}</div>
               </div>
             </div>
             <button class="btn-launch" onclick="launchAttack('${key}', '${s.title}')">
-              <i class="fa-solid fa-rocket"></i> Launch Scenario into Sentinel
+              <i class="fa-solid fa-satellite-dish"></i> INJECT ATTACK INTO SENTINEL
             </button>
           `;
           grid.appendChild(card);
@@ -147,7 +458,7 @@
     }
 
     async function launchAttack(key, title) {
-      log(`Triggering drill: "${title}"...`);
+      log(`[ATTACK INGESTION] Dispatching scenario: "${title}" -> Sentinel (:8090)...`);
       try {
         const res = await fetch('/api/attack/launch', {
           method: 'POST',
@@ -156,12 +467,13 @@
         });
         const data = await res.json();
         if (data.ok) {
-          log(`Drill dispatched! Sentinel status: ${data.sentinelResponse.status} in ${data.sentinelResponse.latencySec}s (Risk: ${data.sentinelResponse.riskScore}/100)`);
+          const r = data.sentinelResponse || {};
+          log(`[DEFENDER REACTION] Sentinel investigated "${title}" in ${r.latencySec}s | Status: ${r.status} | Risk Score: ${r.riskScore}/100 | Containment: ${r.status === 'CONTAINED' ? 'ENFORCED (netsh rule injected)' : 'PENDING'}`);
         } else {
-          log(`Error: ${data.error}. ${data.hint || ''}`);
+          log(`[ERROR] ${data.error}. ${data.hint || ''}`);
         }
       } catch (e) {
-        log(`Failed to transmit attack alert: ${e.message}`);
+        log(`[TRANSMISSION FAILED] ${e.message}`);
       }
     }
 

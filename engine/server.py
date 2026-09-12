@@ -18,6 +18,7 @@ from pydantic import BaseModel
 from engine.orchestrator import SwarmOrchestrator
 from engine.store import store
 from engine.cluster import cluster_manager
+from engine.inference import inference_engine
 
 
 # =============================================================================
@@ -88,10 +89,37 @@ class ApprovalDecision(BaseModel):
 class RollbackPayload(BaseModel):
     rule_name: str
 
+class ModePayload(BaseModel):
+    mode: str
+    local_url: Optional[str] = None
+    local_model: Optional[str] = None
+
 
 # =============================================================================
-# HEALTH & STATUS
+# HEALTH & INFERENCE MODE
 # =============================================================================
+
+@app.get("/api/engine/mode")
+def get_engine_mode():
+    """Return current inference engine mode, active tier, and configuration."""
+    return inference_engine.get_status()
+
+@app.post("/api/engine/mode")
+async def set_engine_mode(payload: ModePayload):
+    """Set the inference mode: HYBRID, FULL_OFFLINE, or DETERMINISTIC_ONLY."""
+    inference_engine.set_mode(
+        mode=payload.mode,
+        local_url=payload.local_url,
+        local_model=payload.local_model
+    )
+    status_data = inference_engine.get_status()
+    # Broadcast mode update to connected Sentinel UIs
+    for q in list(host_event_queues):
+        try:
+            q.put_nowait({"event": "engine_mode_changed", "data": status_data})
+        except Exception:
+            pass
+    return status_data
 
 @app.get("/api/health")
 def health():
@@ -109,10 +137,12 @@ def status():
     """Full system status: engine, memory, cluster, stats."""
     mem   = store.memory
     nodes = cluster_manager.get_healthy_nodes()
+    inf_status = inference_engine.get_status()
     return {
         "ok":    True,
-        "engine": "llm",
-        "model":  "gemini-2.5-flash",
+        "engine": inf_status.get("lastActiveTier", "llm"),
+        "model":  inf_status.get("cloudConfig", {}).get("model", "gemini-2.5-flash"),
+        "inference": inf_status,
         "stats":  mem.get("stats", {}),
         "cluster": {
             "size":           len(nodes) + 1,

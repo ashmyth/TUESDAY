@@ -1,0 +1,321 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-13T00:00:00Z",
+  "title": "Design System: TUESDAY",
+  "extensions": {
+    "colorMeta": {
+      "brand-defensive": {
+        "role": "primary",
+        "displayName": "Signal Emerald",
+        "canonical": "oklch(77% 0.19 163)",
+        "tonalRamp": [
+          "oklch(15% 0.07 163)",
+          "oklch(28% 0.12 163)",
+          "oklch(41% 0.16 163)",
+          "oklch(54% 0.19 163)",
+          "oklch(67% 0.19 163)",
+          "oklch(77% 0.19 163)",
+          "oklch(87% 0.12 163)",
+          "oklch(95% 0.04 163)"
+        ]
+      },
+      "brand-interactive": {
+        "role": "secondary",
+        "displayName": "Telemetry Cyan",
+        "canonical": "oklch(71% 0.12 250)",
+        "tonalRamp": [
+          "oklch(15% 0.06 250)",
+          "oklch(28% 0.09 250)",
+          "oklch(41% 0.11 250)",
+          "oklch(54% 0.12 250)",
+          "oklch(66% 0.12 250)",
+          "oklch(71% 0.12 250)",
+          "oklch(83% 0.08 250)",
+          "oklch(95% 0.03 250)"
+        ]
+      },
+      "brand-cognition": {
+        "role": "tertiary",
+        "displayName": "Thought Purple",
+        "canonical": "oklch(71% 0.11 298)",
+        "tonalRamp": [
+          "oklch(15% 0.06 298)",
+          "oklch(28% 0.08 298)",
+          "oklch(41% 0.10 298)",
+          "oklch(54% 0.11 298)",
+          "oklch(65% 0.11 298)",
+          "oklch(71% 0.11 298)",
+          "oklch(83% 0.08 298)",
+          "oklch(95% 0.03 298)"
+        ]
+      },
+      "danger": {
+        "role": "semantic",
+        "displayName": "Compromise Crimson",
+        "canonical": "oklch(61% 0.24 6)",
+        "tonalRamp": [
+          "oklch(15% 0.09 6)",
+          "oklch(28% 0.15 6)",
+          "oklch(41% 0.20 6)",
+          "oklch(52% 0.24 6)",
+          "oklch(61% 0.24 6)",
+          "oklch(70% 0.20 6)",
+          "oklch(83% 0.12 6)",
+          "oklch(95% 0.04 6)"
+        ]
+      },
+      "hostile-deep": {
+        "role": "semantic",
+        "displayName": "Hostile Machined Fill",
+        "canonical": "oklch(41% 0.20 6)",
+        "tonalRamp": [
+          "oklch(15% 0.09 6)",
+          "oklch(28% 0.15 6)",
+          "oklch(41% 0.20 6)",
+          "oklch(48% 0.22 6)",
+          "oklch(55% 0.23 6)",
+          "oklch(61% 0.24 6)",
+          "oklch(70% 0.20 6)",
+          "oklch(83% 0.12 6)"
+        ]
+      },
+      "attention": {
+        "role": "semantic",
+        "displayName": "Attention Amber",
+        "canonical": "oklch(78% 0.13 60)",
+        "tonalRamp": [
+          "oklch(15% 0.06 60)",
+          "oklch(28% 0.09 60)",
+          "oklch(41% 0.11 60)",
+          "oklch(54% 0.12 60)",
+          "oklch(66% 0.13 60)",
+          "oklch(78% 0.13 60)",
+          "oklch(87% 0.09 60)",
+          "oklch(95% 0.03 60)"
+        ]
+      },
+      "neutral-void": {
+        "role": "neutral",
+        "displayName": "Void Black",
+        "canonical": "oklch(5% 0.003 250)",
+        "tonalRamp": [
+          "oklch(5% 0.003 250)",
+          "oklch(11% 0.004 250)",
+          "oklch(18% 0.006 250)",
+          "oklch(27% 0.008 250)",
+          "oklch(38% 0.010 250)",
+          "oklch(50% 0.012 250)",
+          "oklch(63% 0.014 250)",
+          "oklch(78% 0.008 250)"
+        ]
+      },
+      "neutral-surface": {
+        "role": "neutral",
+        "displayName": "Ops Surface",
+        "canonical": "oklch(10% 0.01 250)",
+        "tonalRamp": [
+          "oklch(10% 0.01 250)",
+          "oklch(16% 0.012 250)",
+          "oklch(23% 0.014 250)",
+          "oklch(32% 0.016 250)",
+          "oklch(43% 0.018 250)",
+          "oklch(54% 0.020 250)",
+          "oklch(68% 0.014 250)",
+          "oklch(82% 0.008 250)"
+        ]
+      },
+      "neutral-card": {
+        "role": "neutral",
+        "displayName": "Card Surface",
+        "canonical": "oklch(13% 0.01 250)",
+        "tonalRamp": [
+          "oklch(13% 0.01 250)",
+          "oklch(19% 0.012 250)",
+          "oklch(26% 0.014 250)",
+          "oklch(35% 0.016 250)",
+          "oklch(46% 0.018 250)",
+          "oklch(57% 0.020 250)",
+          "oklch(70% 0.014 250)",
+          "oklch(84% 0.008 250)"
+        ]
+      },
+      "neutral-ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(97% 0.003 250)",
+        "tonalRamp": [
+          "oklch(55% 0.01 250)",
+          "oklch(64% 0.012 250)",
+          "oklch(73% 0.012 250)",
+          "oklch(80% 0.009 250)",
+          "oklch(87% 0.006 250)",
+          "oklch(92% 0.004 250)",
+          "oklch(95% 0.004 250)",
+          "oklch(97% 0.003 250)"
+        ]
+      },
+      "neutral-muted": {
+        "role": "neutral",
+        "displayName": "Muted Ink",
+        "canonical": "oklch(70% 0.03 250)",
+        "tonalRamp": [
+          "oklch(34% 0.02 250)",
+          "oklch(42% 0.025 250)",
+          "oklch(50% 0.028 250)",
+          "oklch(58% 0.03 250)",
+          "oklch(66% 0.03 250)",
+          "oklch(70% 0.03 250)",
+          "oklch(80% 0.02 250)",
+          "oklch(90% 0.012 250)"
+        ]
+      },
+      "neutral-dim": {
+        "role": "neutral",
+        "displayName": "Dim Ink",
+        "canonical": "oklch(62% 0.028 247)",
+        "tonalRamp": [
+          "oklch(22% 0.012 250)",
+          "oklch(30% 0.016 250)",
+          "oklch(38% 0.018 250)",
+          "oklch(46% 0.024 248)",
+          "oklch(55% 0.028 247)",
+          "oklch(62% 0.028 247)",
+          "oklch(72% 0.02 247)",
+          "oklch(83% 0.012 247)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Brand lockup and major page titles only." },
+      "headline": { "displayName": "Headline", "purpose": "Threat banner titles, panel-level titles." },
+      "title": { "displayName": "Title", "purpose": "Card headers and monitor titles." },
+      "body": { "displayName": "Body", "purpose": "Event descriptions, alert detail, help text." },
+      "label": { "displayName": "Label", "purpose": "Telemetry labels, table headers, tabs, badges." },
+      "mono": { "displayName": "Mono", "purpose": "Every telemetry value, IOC, timestamp, and terminal line." }
+    },
+    "shadows": [
+      { "name": "hairline", "value": "inset 0 0 0 1px rgba(255,255,255,0.07)", "purpose": "Default surface separation." },
+      { "name": "inner-highlight", "value": "inset 0 1px 0 rgba(255,255,255,0.07), inset 0 0 0 1px rgba(255,255,255,0.02)", "purpose": "Resting tactile depth on cards, inputs, metric blocks." },
+      { "name": "ambient-float", "value": "0 16px 36px -10px rgba(0,0,0,0.65)", "purpose": "Floating layers only: modal, twin node overlay, executive report." },
+      { "name": "hover-lift", "value": "0 0 0 1px rgba(56,189,248,0.22)", "purpose": "Interactive surfaces just under the cursor: crisp signal ring, no ambient blur." }
+    ],
+    "motion": [
+      { "name": "ease-premium", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Default easing for state transitions and entries." },
+      { "name": "duration-state", "value": "0.2s", "purpose": "Hover, focus, tab, and small state changes." },
+      { "name": "pulse-idle", "value": "1.4s", "purpose": "Breathing status light on idle/contained banner." },
+      { "name": "pulse-hostile", "value": "1.8s", "purpose": "Border-throbbing hostile banner; degrades to static under reduced motion." },
+      { "name": "fade-enter", "value": "0.25s", "purpose": "Tab content entrance; translates to crossfade under reduced motion." }
+    ],
+    "breakpoints": [
+      { "name": "md", "value": "1100px", "purpose": "Panel splits collapse to single column." },
+      { "name": "lg", "value": "1200px", "purpose": "Grid columns and telemetry wells collapse." },
+      { "name": "xl", "value": "1400px", "purpose": "Brand subtitle hides; denser header." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button (Sentinel)",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Tinted emerald surface, solid emerald text; hover deepens tint and adds a tight glow.",
+      "html": "<button class=\"ds-btn-primary\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"/></svg>VERIFY VERDICT</button>",
+      "css": ".ds-btn-primary { display:inline-flex; align-items:center; gap:8px; padding:7px 14px; background:#0C211A; color:#00E599; font:600 12px/1 'Plus Jakarta Sans',sans-serif; letter-spacing:.01em; border:1px solid rgba(0,229,153,.25); border-radius:6px; cursor:pointer; transition:background .2s cubic-bezier(.16,1,.3,1), border-color .2s, box-shadow .2s; } .ds-btn-primary:hover { background:#09352E; border-color:#00E599; box-shadow:0 0 12px rgba(0,229,153,.25); } .ds-btn-primary:active { transform:scale(.98); } .ds-btn-primary:focus-visible { outline:2px solid #38BDF8; outline-offset:2px; }"
+    },
+    {
+      "name": "Danger Button (Kill)",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Crimson-tinted destructive action; used for terminate / block. Rarity: never for generic emphasis.",
+      "html": "<button class=\"ds-btn-danger\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M6 6l12 12M18 6 6 18\"/></svg>KILL PID 7421</button>",
+      "css": ".ds-btn-danger { display:inline-flex; align-items:center; gap:8px; padding:7px 14px; background:#32151C; color:#F43F5E; font:600 12px/1 'Plus Jakarta Sans',sans-serif; letter-spacing:.01em; border:1px solid rgba(244,63,94,.3); border-radius:6px; cursor:pointer; transition:background .2s cubic-bezier(.16,1,.3,1), border-color .2s, box-shadow .2s; } .ds-btn-danger:hover { background:#3E1927; border-color:#F43F5E; box-shadow:0 0 12px rgba(244,63,94,.3); } .ds-btn-danger:active { transform:scale(.98); } .ds-btn-danger:focus-visible { outline:2px solid #38BDF8; outline-offset:2px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Quiet secondary action; hovers to cyan text + cyan tint.",
+      "html": "<button class=\"ds-btn-ghost\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/></svg>ROLLBACK FIREWALL</button>",
+      "css": ".ds-btn-ghost { display:inline-flex; align-items:center; gap:8px; padding:7px 14px; background:#12151E; color:#94A3B8; font:600 12px/1 'Plus Jakarta Sans',sans-serif; letter-spacing:.01em; border:1px solid rgba(255,255,255,.07); border-radius:6px; cursor:pointer; transition:background .2s cubic-bezier(.16,1,.3,1), border-color .2s, color .2s; } .ds-btn-ghost:hover { background:#0D1F2C; color:#38BDF8; border-color:#38BDF8; } .ds-btn-ghost:active { transform:scale(.98); } .ds-btn-ghost:focus-visible { outline:2px solid #38BDF8; outline-offset:2px; }"
+    },
+    {
+      "name": "IOC Search Input",
+      "kind": "input",
+      "refersTo": "input-search",
+      "description": "Monospace filter field for IOCs and queries; focus snaps to cyan with a soft ring.",
+      "html": "<input class=\"ds-input-search\" type=\"search\" placeholder=\"IOC / IP / hash / host\">",
+      "css": ".ds-input-search { width:100%; padding:10px 14px; background:#0A0D12; color:#F8FAFC; font:500 13px/1.4 'JetBrains Mono',monospace; border:1px solid rgba(255,255,255,.07); border-radius:6px; outline:none; transition:border-color .2s ease, box-shadow .2s ease; } .ds-input-search::placeholder { color:#94A3B8; } .ds-input-search:focus { border-color:#38BDF8; box-shadow:0 0 0 2px rgba(56,189,248,.2); }"
+    },
+    {
+      "name": "Status Pill",
+      "kind": "chip",
+      "refersTo": "pill",
+      "description": "Full-pill status tag; signal color carries status. Emerald defended, crimson hostile, amber pending.",
+      "html": "<span class=\"ds-pill ds-pill-safe\">CONTAINED</span><span class=\"ds-pill ds-pill-hostile\">ACTIVE THREAT</span>",
+      "css": ".ds-pill { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:999px; font:600 11px/1.4 'Plus Jakarta Sans',sans-serif; letter-spacing:.03em; border:1px solid transparent; } .ds-pill-safe { background:#0C211A; color:#00E599; border-color:rgba(0,229,153,.3); } .ds-pill-hostile { background:#32151C; color:#F43F5E; border-color:rgba(244,63,94,.35); } .ds-pill::before { content:''; width:6px; height:6px; border-radius:50%; background:currentColor; }"
+    },
+    {
+      "name": "Machined Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Cards sit on hairline + inner highlight at rest — never a wide ambient shadow.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-head\"><h3>AGENT SWARM</h3><span class=\"ds-card-count\">9 ACTIVE</span></div><div class=\"ds-card-body\">Live multi-agent reasoning stream.</div></div>",
+      "css": ".ds-card { background:rgba(13,17,26,.76); backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,.09); border-radius:14px; box-shadow:inset 0 1px 0 rgba(255,255,255,.07), inset 0 0 0 1px rgba(255,255,255,.02); overflow:hidden; transition:border-color .25s ease, box-shadow .25s ease; } .ds-card:hover { border-color:rgba(56,189,248,.35); } .ds-card-head { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 20px; background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)); border-bottom:1px solid rgba(255,255,255,.07); } .ds-card-head h3 { margin:0; font:700 12.8px/1.4 'Plus Jakarta Sans',sans-serif; letter-spacing:.03em; color:#F8FAFC; } .ds-card-count { font:600 11px/1.4 'Plus Jakarta Sans',sans-serif; letter-spacing:.04em; color:#00E599; } .ds-card-body { padding:18px; font:400 13px/1.5 'Plus Jakarta Sans',sans-serif; color:#94A3B8; }"
+    },
+    {
+      "name": "Active Console Tab",
+      "kind": "nav",
+      "refersTo": "tab-active",
+      "description": "Flat tab buttons; active state = cyan tint, cyan hairline border, inner top highlight.",
+      "html": "<nav class=\"ds-tabs\"><button class=\"ds-tab\">COMMAND CENTER</button><button class=\"ds-tab ds-tab-active\">AGENT SWARM</button><button class=\"ds-tab\">DIGITAL TWIN</button></nav>",
+      "css": ".ds-tabs { display:flex; align-items:center; gap:6px; padding:8px 24px; background:rgba(8,10,15,.9); border-bottom:1px solid rgba(255,255,255,.07); } .ds-tab { padding:7px 14px; background:transparent; border:1px solid transparent; border-radius:6px; color:#94A3B8; font:600 12px/1 'Plus Jakarta Sans',sans-serif; letter-spacing:.02em; cursor:pointer; white-space:nowrap; transition:color .2s ease, background .2s ease; } .ds-tab:hover { color:#F8FAFC; background:rgba(255,255,255,.04); } .ds-tab-active { color:#38BDF8; background:#0D1F2C; border-color:rgba(56,189,248,.3); box-shadow:inset 0 1px 0 rgba(56,189,248,.2); } .ds-tab:focus-visible { outline:2px solid #38BDF8; outline-offset:2px; }"
+    },
+    {
+      "name": "Hostile Threat Banner",
+      "kind": "custom",
+      "refersTo": "card",
+      "description": "Signature. Crimson tint + glow with a breathing border pulse. Degrades to static at prefers-reduced-motion.",
+      "html": "<div class=\"ds-banner ds-banner-hostile\"><div class=\"ds-banner-icon\"><svg width=\"30\" height=\"30\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 3s6 4 6 10a6 6 0 0 1-12 0c0-6 6-10 6-10z\"/><path d=\"M12 8v4\"/><path d=\"M12 16h.01\"/></svg></div><div class=\"ds-banner-info\"><h3>ACTIVE THREAT: PRIVACY HARVESTER DETECTED</h3><p>PID 7421 inspected .env and spawned outbound telemetry. Verdict pending critic review.</p></div></div>",
+      "css": "@media (prefers-reduced-motion: reduce) { .ds-banner-hostile { animation:none; } } .ds-banner-hostile { display:flex; align-items:center; gap:24px; padding:18px 24px; border-radius:14px; background:linear-gradient(135deg, rgba(244,63,94,.18), rgba(13,17,26,.92)); border:1px solid rgba(244,63,94,.6); box-shadow:0 0 35px -5px rgba(244,63,94,.35); animation:dsHostilePulse 1.8s infinite alternate ease-in-out; } @keyframes dsHostilePulse { from { border-color:rgba(244,63,94,.4); box-shadow:0 0 25px rgba(244,63,94,.25); } to { border-color:rgba(244,63,94,.85); box-shadow:0 0 45px rgba(244,63,94,.5); } } .ds-banner-icon { color:#F43F5E; flex-shrink:0; } .ds-banner-info h3 { margin:0 0 4px; font:700 17px/1.3 'Plus Jakarta Sans',sans-serif; color:#F43F5E; text-shadow:0 0 10px rgba(244,63,94,.4); } .ds-banner-info p { margin:0; font:400 13px/1.5 'Plus Jakarta Sans',sans-serif; color:#94A3B8; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Air-Gap Ops Room",
+    "overview": "This is the floor of a real security operations center at 3 a.m.: focused, quiet, every panel given a job, and nothing on screen that isn't working. TUESDAY is a defense instrument, not marketing theater. The atmosphere is a deep, near-black void with sparse signal lights — each glow carries a status meaning, and anything that doesn't carry status has been refused entry to the interface. The system serves two faces of the same instruments. Sentinel (the defense console at 8090) is the calm command deck: emerald as the breathing all clear, cyan for live data channels, purple for cognition. RedTeam (the adversary suite at 8095) shifts the room toward crimson and amber — the drills, but on the same hardware. The shared DNA keeps both apps recognizable as TUESDAY from across a room; the accent shift tells you which side of the glass you're on. This system explicitly rejects the SaaS-purple admin dashboard, the cluttered hacker-movie terminal where nothing is scannable, and glow-on-glow illegibility. Verdicts are never the story alone — the evidence chain behind them is always legible. Atmosphere earns its place; every haze, pulse, and glow is either a status signal or focus feedback.",
+    "keyCharacteristics": [
+      "Deep void backgrounds with sparse, meaning-carrying signal color.",
+      "Hairline borders + inner highlights establish depth; ambient shadow is reserved for floating layers.",
+      "Machine-graded monospace (JetBrains Mono) for all telemetry, IOCs, and timestamps.",
+      "Calm, clipped, operational voice — uppercase labels are data labels, not marketing kickers.",
+      "Status-by-hue with paired text labels (never hue alone), respecting reduced motion."
+    ],
+    "rules": [
+      { "name": "The Signal Rule", "body": "Signal colors are status first, decoration never. Emerald means defended, cyan means data, purple means cognition, crimson means hostile, amber means pending. Recoloring an element for visual balance is forbidden; if an element has no status to carry, it is neutral.", "section": "colors" },
+      { "name": "The Rarity Rule", "body": "Compromise Crimson is expensive. It is reserved for genuinely hostile states — the hostile banner, detected MITRE cards, kill actions. A red that is merely emphatic is off-brand noise.", "section": "colors" },
+      { "name": "The Split-Room Rule", "body": "Sentinel leads with emerald; RedTeam leads with crimson. Cross-reuse is deliberate, never default — the two apps must be distinguishable at a glance.", "section": "colors" },
+      { "name": "The Instrument Label Rule", "body": "Uppercase micro-labels are data labels: 0.6–0.68rem, tracking >= 0.04em, never used for prose. They name what the number behind them is — they are not decoration and not marketing kickers.", "section": "typography" },
+      { "name": "The Bright-Line Rule", "body": "Body copy is Ink or Muted Ink (#94A3B8 or brighter) on surface. Dim Ink (#7C8DB0) is micro-meta only: timestamps, table headers, empty states. Glow text is reserved for large numerals and single status words — never for paragraphs.", "section": "typography" },
+      { "name": "The No-Ghost Rule", "body": "A card at rest is either hairline-plus-highlight OR ambient float, never both. A fully bordered card floating on a 36px-blur shadow reads as a 2014-ghost; if it looks like a drop shadow screenshot, the blur is too big and the border shouldn't be there. Reserve the big shadow for what genuinely floats.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do establish depth with hairline borders and inner highlights; reserve the wide ambient shadow for modal, twin overlay, and hover.",
+      "Do use the signals by their semantic job: Emerald defended, Cyan data, Purple cognition, Crimson hostile, Amber pending.",
+      "Do render every telemetry value, IOC, timestamp, and table cell in JetBrains Mono.",
+      "Do use uppercase labels only as data labels (0.6–0.68rem, tracking >= 0.04em) that name the value below them.",
+      "Do keep body and UI text at WCAG AA: 4.5:1 for body (Ink / Muted Ink on surface), 3:1 for large text; treat Dim Ink (#7C8DB0) as micro-meta only.",
+      "Do pair every red/green status with a text label so it never depends on hue alone.",
+      "Do provide prefers-reduced-motion alternatives — pulses become static indicator dots, entries become crossfades."
+    ],
+    "donts": [
+      "Don't make it a generic SaaS-purple admin dashboard — no soft rounded cards, no muted-gray-on-tinted-white. This is a defense instrument.",
+      "Don't build cluttered \"hacker movie\" terminals where nothing is scannable. Density serves hierarchy, never theater.",
+      "Don't use glow-on-glow text: no neon-on-tint that fails contrast. Glow is for large numerals and status words, not paragraphs.",
+      "Don't render a stateless one-shot verdict — evidence, hypotheses, and critic confidence are always visible next to the verdict.",
+      "Don't present metrics as marketing numbers; they are live instrument readings.",
+      "Don't use a colored border-left/right stripe (>1px) as an accent on cards, alerts, or list items — use tints, full borders, icons, or nothing.",
+      "Don't use gradient text (background-clip: text), glassmorphism as a default, or decorative stripe/doodle backgrounds.",
+      "Don't exceed 16px card radius (14 is the system) or 20px on modal; pill is for chips/tags only.",
+      "Don't pair a full hairline border with a wide ambient shadow at rest (the ghost-card pattern).",
+      "Don't clamp a heading smaller than its content needs — display wraps within the room, never overflows it."
+    ]
+  }
+}

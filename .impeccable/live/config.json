@@ -1,0 +1,6 @@
+{
+  "files": ["sentinel/**/*.html", "redteam/**/*.html"],
+  "insertBefore": "</body>",
+  "commentSyntax": "html",
+  "cspChecked": true
+}

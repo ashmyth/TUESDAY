@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TUESDAY — Autonomous Multi-Agent SOC Platform</title>
     <meta name="description" content="TUESDAY — Threat Unification Engine for Security Defense And Your SOC. Autonomous multi-agent security operations center.">
-    <!-- Google Fonts: Inter + JetBrains Mono -->
+    <!-- Google Fonts: Plus Jakarta Sans + JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&family=Share+Tech+Mono&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- FontAwesome for UI Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js for SOC Metrics -->
@@ -47,6 +47,24 @@
                 <div class="telemetry-box">
                     <span class="lbl">AVG LATENCY</span>
                     <span class="val text-bright-green" id="top-metric-latency">1.18s</span>
+                </div>
+            </div>
+
+            <!-- Tactical 3-Tier Inference Architecture Selector -->
+            <div class="inference-tier-control" id="inference-tier-control">
+                <div class="tier-control-header">
+                    <span class="tier-tag"><i class="fa-solid fa-microchip"></i> INFERENCE ARCHITECTURE</span>
+                    <span class="tier-indicator-badge tier-deterministic" id="tier-badge-status" title="Active model execution tier">
+                        <span class="indicator-dot"></span>
+                        <span id="tier-badge-label">TIER 3: DETERMINISTIC</span>
+                    </span>
+                </div>
+                <div class="tier-control-selector">
+                    <select id="select-inference-mode" class="machined-select" title="Switch between Full Cloud Hybrid, Air-Gap Local SLM, and Deterministic Rules">
+                        <option value="HYBRID">HYBRID: Cloud API ➔ Local SLM ➔ Rules</option>
+                        <option value="FULL_OFFLINE">FULL OFFLINE: Local SLM ➔ Rules (Air-Gap)</option>
+                        <option value="DETERMINISTIC_ONLY">AIR-GAP RULES: Pure On-Host Forensics (Zero AI)</option>
+                    </select>
                 </div>
             </div>
 
@@ -130,15 +148,15 @@
                 </div>
 
                 <!-- Mission-Critical Live Defense Telemetry Strip -->
-                <div class="host-defense-strip" style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,255,136,0.04); border:1px solid var(--matrix-card-border); border-radius:6px; padding:0.6rem 1rem; margin-bottom:1rem; font-family:'JetBrains Mono',monospace; font-size:0.8rem;">
+                <div class="host-defense-strip live">
                     <div style="display:flex; align-items:center; gap:1.25rem;">
                         <span style="color:var(--matrix-green); font-weight:700;"><i class="fa-solid fa-satellite"></i> LIVE EDR HOOKS</span>
-                        <span class="text-muted">HOST: <strong style="color:#fff;">DESKTOP-TUESDAY</strong></span>
+                        <span class="text-muted">HOST: <strong style="color:#F8FAFC;">DESKTOP-TUESDAY</strong></span>
                         <span class="text-muted">SUBSYSTEM: <strong style="color:#38bdf8;">KERNEL FIREWALL & REGISTRY SENSORS</strong></span>
                     </div>
                     <div style="display:flex; align-items:center; gap:1rem;">
-                        <span class="matrix-pill" id="pill-watchdog-state"><i class="fa-solid fa-circle pulse" style="font-size:0.6rem; color:#00ff88;"></i> LISTENING ON PORT 8090</span>
-                        <span class="text-muted">INGESTION: <strong style="color:#00ff88;">REAL-TIME SSE</strong></span>
+                        <span class="matrix-pill" id="pill-watchdog-state"><i class="fa-solid fa-circle pulse" style="font-size:0.6rem; color:var(--signal-emerald);"></i> LISTENING ON PORT 8090</span>
+                        <span class="text-muted">INGESTION: <strong style="color:var(--signal-emerald);">REAL-TIME SSE</strong></span>
                     </div>
                 </div>
 
@@ -168,55 +186,55 @@
                             <div class="agent-swarm-map" id="agent-swarm-nodes">
                                 <svg class="swarm-svg-canvas" id="swarm-svg-connections"></svg>
 
-                                <div class="agent-node" data-agent="coordinator" style="top: 12%; left: 42%; transform: translateX(-50%);">
+                                <div class="agent-node" data-agent="coordinator" role="button" tabindex="0" aria-label="SOC Coordinator — open details" style="--nx: 50%; --ny: 47%;">
                                     <div class="node-icon bg-matrix-green"><i class="fa-solid fa-sitemap"></i></div>
                                     <div class="node-label">Coordinator</div>
                                     <span class="node-status badge-matrix-green">Planning</span>
                                 </div>
 
-                                <div class="agent-node" data-agent="critic" style="top: 12%; left: 72%; transform: translateX(-50%);">
-                                    <div class="node-icon" style="background:#D97706; color:#1F2A2E;"><i class="fa-solid fa-user-ninja"></i></div>
-                                    <div class="node-label" style="color:#D97706;">Critic</div>
-                                    <span class="node-status" style="border-color:#D97706; color:#D97706; background:rgba(217,119,6,0.12);">Challenging</span>
+                                <div class="agent-node" data-agent="critic" role="button" tabindex="0" aria-label="Adversarial Critic — open details" style="--nx: 88%; --ny: 47%;">
+                                    <div class="node-icon bg-matrix-amber"><i class="fa-solid fa-user-ninja"></i></div>
+                                    <div class="node-label">Critic</div>
+                                    <span class="node-status badge-matrix-amber">Challenging</span>
                                 </div>
 
-                                <div class="agent-node" data-agent="log" style="top: 42%; left: 12%;">
+                                <div class="agent-node" data-agent="log" role="button" tabindex="0" aria-label="Log Analysis agent — open details" style="--nx: 14%; --ny: 20%;">
                                     <div class="node-icon bg-matrix-cyan"><i class="fa-solid fa-list-check"></i></div>
                                     <div class="node-label">Log Analysis</div>
                                     <span class="node-status badge-matrix-cyan">Correlating</span>
                                 </div>
 
-                                <div class="agent-node" data-agent="threatintel" style="top: 42%; left: 37%;">
+                                <div class="agent-node" data-agent="threatintel" role="button" tabindex="0" aria-label="Threat Intelligence agent — open details" style="--nx: 34%; --ny: 12%;">
                                     <div class="node-icon bg-matrix-purple"><i class="fa-solid fa-globe"></i></div>
                                     <div class="node-label">Threat Intel</div>
                                     <span class="node-status badge-matrix-purple">Enriching</span>
                                 </div>
 
-                                <div class="agent-node" data-agent="malware" style="top: 42%; left: 63%;">
+                                <div class="agent-node" data-agent="malware" role="button" tabindex="0" aria-label="Malware Sandbox agent — open details" style="--nx: 66%; --ny: 12%;">
                                     <div class="node-icon bg-matrix-pink"><i class="fa-solid fa-bug"></i></div>
                                     <div class="node-label">Malware Sandbox</div>
                                     <span class="node-status badge-matrix-pink">Scanning</span>
                                 </div>
 
-                                <div class="agent-node" data-agent="cloud" style="top: 42%; left: 88%;">
+                                <div class="agent-node" data-agent="cloud" role="button" tabindex="0" aria-label="Cloud Security agent — open details" style="--nx: 86%; --ny: 20%;">
                                     <div class="node-icon bg-matrix-teal"><i class="fa-solid fa-cloud"></i></div>
                                     <div class="node-label">Cloud Security</div>
                                     <span class="node-status badge-matrix-teal">Auditing</span>
                                 </div>
 
-                                <div class="agent-node" data-agent="response" style="top: 75%; left: 25%;">
+                                <div class="agent-node" data-agent="response" role="button" tabindex="0" aria-label="Incident Response agent — open details" style="--nx: 18%; --ny: 82%;">
                                     <div class="node-icon bg-matrix-red"><i class="fa-solid fa-bolt"></i></div>
                                     <div class="node-label">Incident Response</div>
                                     <span class="node-status badge-matrix-red">Executing</span>
                                 </div>
 
-                                <div class="agent-node" data-agent="compliance" style="top: 75%; left: 50%;">
+                                <div class="agent-node" data-agent="compliance" role="button" tabindex="0" aria-label="Compliance Audit agent — open details" style="--nx: 50%; --ny: 86%;">
                                     <div class="node-icon bg-matrix-amber"><i class="fa-solid fa-scale-balanced"></i></div>
                                     <div class="node-label">Compliance</div>
                                     <span class="node-status badge-matrix-amber">Auditing</span>
                                 </div>
 
-                                <div class="agent-node" data-agent="approval" style="top: 75%; left: 75%;">
+                                <div class="agent-node" data-agent="approval" role="button" tabindex="0" aria-label="Human Approval agent — open details" style="--nx: 82%; --ny: 82%;">
                                     <div class="node-icon bg-matrix-green"><i class="fa-solid fa-user-shield"></i></div>
                                     <div class="node-label">Human Approval</div>
                                     <span class="node-status badge-matrix-green">Governing</span>
@@ -478,7 +496,7 @@
                             </div>
                         </div>
                         <div class="card-body">
-                            <p style="color: #00ff66; font-size: 0.9rem; margin-bottom: 0.5rem;">
+                            <p style="color: var(--signal-emerald); font-size: 0.9rem; margin-bottom: 0.5rem;">
                                 Elevated OS Watchdog actively monitoring Windows Registry persistence keys, live network sockets, and active process trees in real time.
                             </p>
                             <div style="display: flex; gap: 15px; font-size: 0.85rem; font-family: monospace;">
@@ -506,7 +524,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="tbody-host-sockets">
-                                    <tr><td colspan="5" style="text-align: center; color: #888;">Fetching live sockets...</td></tr>
+                                    <tr><td colspan="5" style="text-align: center; color: var(--text-dim);">Fetching live sockets...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -528,7 +546,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="tbody-host-registry">
-                                    <tr><td colspan="4" style="text-align: center; color: #888;">Scanning registry autostart keys...</td></tr>
+                                    <tr><td colspan="4" style="text-align: center; color: var(--text-dim);">Scanning registry autostart keys...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -553,7 +571,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="tbody-host-firewall-rules">
-                                    <tr><td colspan="6" style="text-align: center; color: #888;">No active firewall rules injected yet. Automated rules deploy via netsh when hostile threats are contained.</td></tr>
+                                    <tr><td colspan="6" style="text-align: center; color: var(--text-dim);">No active firewall rules injected yet. Automated rules deploy via netsh when hostile threats are contained.</td></tr>
                                 </tbody>
                             </table>
                         </div>

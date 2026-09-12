@@ -153,7 +153,7 @@ class DigitalSOCTwin {
             this.ctx.textAlign = 'center';
             this.ctx.fillText(node.name, nx, ny + 38);
 
-            this.ctx.fillStyle = '#5E7076';
+            this.ctx.fillStyle = '#7C8DB0';
             this.ctx.font = '10px "Share Tech Mono"';
             this.ctx.fillText(node.ip, nx, ny + 50);
         });

@@ -37,6 +37,7 @@ class TuesdayApp {
         this.initChart();
         this.initDigitalTwin();
         this.drawAgentSVGConnections();
+        this.bindSwarmNodeClicks();
         this.renderAgentSidebar();
         this.renderAgentDetails('coordinator');
         this.renderMemoryView('episodic');
@@ -78,6 +79,7 @@ class TuesdayApp {
 
         this.seedInitialAlerts();
         this.initBackendStatus();
+        this.bindInferenceModeSelector();
     }
 
     // =====================================================
@@ -118,6 +120,80 @@ class TuesdayApp {
         } else {
             if (pill) { pill.innerText = 'ENGINE: STATIC FALLBACK'; pill.className = 'matrix-pill badge-matrix-amber'; }
             if (swarmStatus) swarmStatus.innerHTML = '<i class="fa-solid fa-circle pulse"></i> 8 AGENTS ONLINE (STATIC)';
+        }
+    }
+
+    // =====================================================
+    // 3-TIER INFERENCE ARCHITECTURE CONTROLLER
+    // =====================================================
+    bindInferenceModeSelector() {
+        const select = document.getElementById('select-inference-mode');
+        if (!select) return;
+
+        select.addEventListener('change', async (e) => {
+            const newMode = e.target.value;
+            await this.updateInferenceMode(newMode);
+        });
+
+        // Fetch initial status from server
+        this.fetchInferenceStatus();
+    }
+
+    async fetchInferenceStatus() {
+        try {
+            const res = await fetch('/api/engine/mode');
+            if (res.ok) {
+                const data = await res.json();
+                this.renderInferenceBadge(data);
+            }
+        } catch (e) {
+            console.warn('[Inference] Failed to fetch mode status:', e);
+        }
+    }
+
+    async updateInferenceMode(mode) {
+        try {
+            const res = await fetch('/api/engine/mode', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mode })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                this.renderInferenceBadge(data);
+                const desc = mode === 'HYBRID' ? 'Cloud API ➔ Local SLM ➔ Rules' : (mode === 'FULL_OFFLINE' ? 'Air-Gap Local SLM ➔ Rules' : 'Pure On-Host Deterministic Forensics');
+                this.appendTerminalLog('coordinator', `>> [INFERENCE ARCHITECTURE] Mode switched to: ${mode} (${desc}). Active Tier: ${data.lastActiveTier}`, 'info');
+            }
+        } catch (e) {
+            console.error('[Inference] Mode switch failed:', e);
+        }
+    }
+
+    renderInferenceBadge(status) {
+        const select = document.getElementById('select-inference-mode');
+        const badge = document.getElementById('tier-badge-status');
+        const label = document.getElementById('tier-badge-label');
+        if (!badge || !label) return;
+
+        if (select && status.mode) {
+            select.value = status.mode;
+        }
+
+        const tier = status.lastActiveTier || 'TIER_3_DETERMINISTIC';
+        badge.className = 'tier-indicator-badge';
+
+        if (tier === 'TIER_1_CLOUD') {
+            badge.classList.add('tier-cloud');
+            label.innerText = 'TIER 1: CLOUD API';
+            badge.title = 'Active: Cloud LLM API (Gemini 2.5 Flash)';
+        } else if (tier === 'TIER_2_LOCAL_SLM') {
+            badge.classList.add('tier-local');
+            label.innerText = 'TIER 2: LOCAL SLM';
+            badge.title = 'Active: Local Offline SLM (Ollama / vLLM on Port 11434)';
+        } else {
+            badge.classList.add('tier-deterministic');
+            label.innerText = 'TIER 3: DETERMINISTIC';
+            badge.title = 'Active: On-Host Forensics Engine (Air-gapped, zero external dependencies)';
         }
     }
 
@@ -214,6 +290,26 @@ class TuesdayApp {
         const container = document.getElementById('agent-swarm-nodes');
         if (!svg || !container) return;
 
+        const NS = 'http://www.w3.org/2000/svg';
+
+        // Arrowhead marker (drawn once)
+        svg.innerHTML = '';
+        const defs = document.createElementNS(NS, 'defs');
+        const marker = document.createElementNS(NS, 'marker');
+        marker.setAttribute('id', 'swarm-arrowhead');
+        marker.setAttribute('viewBox', '0 0 8 8');
+        marker.setAttribute('refX', '7');
+        marker.setAttribute('refY', '4');
+        marker.setAttribute('markerWidth', '5');
+        marker.setAttribute('markerHeight', '5');
+        marker.setAttribute('orient', 'auto-start-reverse');
+        const tip = document.createElementNS(NS, 'path');
+        tip.setAttribute('d', 'M0,0 L8,4 L0,8 Z');
+        tip.setAttribute('fill', 'rgba(148, 163, 184, 0.35)');
+        marker.appendChild(tip);
+        defs.appendChild(marker);
+        svg.appendChild(defs);
+
         const connections = [
             ['coordinator', 'log'],
             ['coordinator', 'threatintel'],
@@ -233,30 +329,49 @@ class TuesdayApp {
         const getCenter = (agentKey) => {
             const node = container.querySelector(`.agent-node[data-agent="${agentKey}"]`);
             if (!node) return { x: 0, y: 0 };
+            const icon = node.querySelector('.node-icon') || node;
             const cRect = container.getBoundingClientRect();
-            const nRect = node.getBoundingClientRect();
+            const nRect = icon.getBoundingClientRect();
             return {
                 x: nRect.left - cRect.left + nRect.width / 2,
                 y: nRect.top - cRect.top + nRect.height / 2
             };
         };
 
-        setTimeout(() => {
-            svg.innerHTML = '';
+        const draw = () => {
+            if (document.hidden) return;
+            if (!container.clientWidth || !container.clientHeight) return;
             connections.forEach(([from, to]) => {
                 const a = getCenter(from);
                 const b = getCenter(to);
-                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                let line = svg.querySelector(`line[data-from="${from}"][data-to="${to}"]`);
+                if (!line) {
+                    line = document.createElementNS(NS, 'line');
+                    line.classList.add('swarm-connection-line');
+                    line.setAttribute('data-from', from);
+                    line.setAttribute('data-to', to);
+                    svg.appendChild(line);
+                }
                 line.setAttribute('x1', a.x);
                 line.setAttribute('y1', a.y);
                 line.setAttribute('x2', b.x);
                 line.setAttribute('y2', b.y);
-                line.classList.add('swarm-connection-line');
-                line.setAttribute('data-from', from);
-                line.setAttribute('data-to', to);
-                svg.appendChild(line);
             });
-        }, 500);
+        };
+
+        // Draw once fonts/layout settle, then track live size changes.
+        requestAnimationFrame(() => requestAnimationFrame(draw));
+
+        if (window.ResizeObserver) {
+            this._swarmResizeObserver = new ResizeObserver(() => requestAnimationFrame(draw));
+            this._swarmResizeObserver.observe(container);
+        } else {
+            window.addEventListener('resize', draw);
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) requestAnimationFrame(draw);
+        });
     }
 
     pulseAgentSVGLine(agentKey) {
@@ -264,15 +379,40 @@ class TuesdayApp {
         if (!svg) return;
         svg.querySelectorAll(`.swarm-connection-line[data-from="${agentKey}"], .swarm-connection-line[data-to="${agentKey}"]`).forEach(line => {
             line.classList.add('active');
-            setTimeout(() => line.classList.remove('active'), 1200);
+            clearTimeout(line._pulseTimer);
+            line._pulseTimer = setTimeout(() => line.classList.remove('active'), 1200);
         });
     }
 
     pulseAgentNode(agentKey) {
         const node = document.querySelector(`.agent-node[data-agent="${agentKey}"]`);
         if (!node) return;
-        node.style.filter = 'brightness(1.6) drop-shadow(0 0 8px rgba(62,122,132,0.5))';
-        setTimeout(() => { node.style.filter = ''; }, 1200);
+        node.classList.add('active');
+        clearTimeout(node._pulseTimer);
+        node._pulseTimer = setTimeout(() => node.classList.remove('active'), 1200);
+    }
+
+    bindSwarmNodeClicks() {
+        const container = document.getElementById('agent-swarm-nodes');
+        if (!container) return;
+        const activate = (key) => {
+            if (!key || !SwarmEngine.agents[key]) return;
+            document.querySelector('.tab-btn[data-tab="tab-swarm"]')?.click();
+            this.selectedAgentKey = key;
+            document.querySelectorAll('.agent-nav-item').forEach(i => {
+                i.classList.toggle('active', i.getAttribute('data-agent') === key);
+            });
+            this.renderAgentDetails(key);
+        };
+        container.querySelectorAll('.agent-node').forEach(node => {
+            node.addEventListener('click', () => activate(node.getAttribute('data-agent')));
+            node.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    activate(node.getAttribute('data-agent'));
+                }
+            });
+        });
     }
 
     // =====================================================
@@ -1047,7 +1187,7 @@ class TuesdayApp {
         const ctx = document.getElementById('chart-incident-types')?.getContext('2d');
         if (!ctx) return;
 
-        Chart.defaults.color = '#5E7076';
+        Chart.defaults.color = '#94A3B8';
         this.chartInstance = new Chart(ctx, {
             type: 'doughnut',
             data: {
@@ -1062,7 +1202,7 @@ class TuesdayApp {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { position: 'bottom', labels: { color: '#5E7076', font: { size: 10, family: 'Share Tech Mono' } } }
+                    legend: { position: 'bottom', labels: { color: '#94A3B8', font: { size: 10, family: 'Share Tech Mono' } } }
                 }
             }
         });
@@ -1285,7 +1425,7 @@ class TuesdayApp {
                         item.innerHTML = `
                             <div class="stream-item-header" style="display:flex; justify-content:space-between;">
                                 <span class="badge badge-matrix-red"><i class="fa-solid fa-skull"></i> THREAT INGESTED</span>
-                                <span class="stream-time" style="font-family:monospace; font-size:0.75rem; color:#888;">${new Date().toLocaleTimeString()}</span>
+                                <span class="stream-time" style="font-family:monospace; font-size:0.75rem; color: var(--text-dim);">${new Date().toLocaleTimeString()}</span>
                             </div>
                             <div class="stream-item-title" style="font-weight:bold; color:#fff; margin:0.3rem 0;">${threat.title}</div>
                             <div class="stream-item-target" style="font-family:monospace; font-size:0.8rem; color:#60a5fa;">Host: ${threat.targetHost || threat.host || 'DESKTOP-TUESDAY'} | IOC: ${threat.ioc || '185.220.101.5'}</div>
@@ -1312,11 +1452,33 @@ class TuesdayApp {
                 } catch (err) {}
             });
 
+            hostSource.addEventListener('engine_mode_changed', (e) => {
+                try {
+                    const data = JSON.parse(e.data);
+                    this.renderInferenceBadge(data);
+                } catch (err) {}
+            });
+
             hostSource.addEventListener('incident_result', (e) => {
                 try {
                     const res = JSON.parse(e.data);
                     const alert = res.alert || {};
                     this.stopMTTRTimer(res.latencySec);
+
+                    // Update inference tier badge & fallback notification
+                    if (res.inferenceTier) {
+                        this.renderInferenceBadge({
+                            mode: res.inferenceMode || document.getElementById('select-inference-mode')?.value,
+                            lastActiveTier: res.inferenceTier
+                        });
+
+                        const currentMode = document.getElementById('select-inference-mode')?.value || 'HYBRID';
+                        if (currentMode === 'HYBRID' && res.inferenceTier === 'TIER_3_DETERMINISTIC') {
+                            this.appendTerminalLog('coordinator', `>> [INFERENCE FALLBACK] Cloud API / Local SLM unreachable. Successfully fell back to Tier 3 On-Host Deterministic Forensics.`, 'warning');
+                        } else {
+                            this.appendTerminalLog('coordinator', `>> [INFERENCE TIER] Incident resolved via ${res.inferenceTier}.`, 'info');
+                        }
+                    }
 
                     // Update threat score meter
                     const scoreEl = document.getElementById('threat-score-val');
@@ -1378,7 +1540,7 @@ class TuesdayApp {
             const data = await res.json();
             const rules = data.rules || [];
             if (rules.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888;">No active firewall rules injected yet. Run an attack drill from RedTeam (Port 8095).</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-dim);">No active firewall rules injected yet. Run an attack drill from RedTeam (Port 8095).</td></tr>';
                 return;
             }
             tbody.innerHTML = '';

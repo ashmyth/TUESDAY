@@ -13,6 +13,7 @@ from typing import Dict, Any, List, Optional, Callable
 
 from engine.tools import TOOL_MAP, TOOL_SCHEMAS
 from engine.store import store
+from engine.inference import inference_engine
 
 def _load_env():
     env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
@@ -26,8 +27,6 @@ def _load_env():
                         os.environ[k.strip()] = v.strip()
 
 _load_env()
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
 MAX_TURNS = 5
 
 # Phase assignments: fast intel agents run first, slow deep-analysis agents get their results
@@ -39,6 +38,7 @@ class AgenticSwarmMember:
     """
     Specialized cybersecurity reasoning agent.
     Runs a true multi-turn ReAct loop: Reason -> Act (tool call) -> Observe -> Reason.
+    Supports 3-tier inference hierarchy: Cloud API -> Local Offline SLM -> Deterministic fallback.
     """
     def __init__(self, key: str, name: str, role: str, color: str, tools: List[str]):
         self.key    = key
@@ -48,36 +48,15 @@ class AgenticSwarmMember:
         self.tools  = tools
         self.schemas = [s for s in TOOL_SCHEMAS if s["name"] in tools]
 
-    def _call_llm(self, messages: List[Dict[str, Any]], use_tools: bool = True) -> Dict[str, Any]:
-        """Gemini 2.5 Flash with fast quota detection and sensible backoff."""
-        api_key = os.getenv("GEMINI_API_KEY", GEMINI_API_KEY)
-        if not api_key:
-            raise RuntimeError("No GEMINI_API_KEY configured — using on-host edge forensics.")
-
-        payload = {"model": "gemini-2.5-flash", "messages": messages, "temperature": 0.2}
-        if use_tools and self.schemas:
-            payload["tools"] = [{"type": "function", "function": t} for t in self.schemas]
-        headers = {"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"}
-
-        for attempt in range(2):
-            try:
-                resp = requests.post(GEMINI_URL, headers=headers, json=payload, timeout=20)
-                if resp.status_code == 429:
-                    txt = resp.text.lower()
-                    if "quota" in txt:
-                        raise RuntimeError("Gemini API quota exhausted — falling back to on-host edge forensics.")
-                    if attempt == 0:
-                        time.sleep(2)
-                        continue
-                    raise RuntimeError("Gemini API rate limit exceeded.")
-                resp.raise_for_status()
-                return resp.json()["choices"][0]["message"]
-            except requests.exceptions.RequestException as e:
-                if attempt == 0 and "quota" not in str(e).lower():
-                    time.sleep(2)
-                    continue
-                raise
-        raise RuntimeError("Gemini API unavailable.")
+    def _call_llm(self, messages: List[Dict[str, Any]], use_tools: bool = True, emit_log: Optional[Callable[[str, str, str], None]] = None) -> Dict[str, Any]:
+        """Calls inference via the 3-Tier Tactical Inference Engine."""
+        tools = self.schemas if (use_tools and self.schemas) else None
+        return inference_engine.call_chat_completion(
+            messages=messages,
+            tools=tools,
+            temperature=0.2,
+            emit_log=emit_log
+        )
 
     def investigate(
         self,
@@ -144,7 +123,7 @@ FINAL OUTPUT — respond ONLY with valid JSON when investigation is complete:
 
         for turn in range(MAX_TURNS):
             try:
-                msg = self._call_llm(messages, use_tools=True)
+                msg = self._call_llm(messages, use_tools=True, emit_log=emit_log)
             except Exception as e:
                 if emit_log:
                     emit_log(self.key, f"LLM turn {turn+1} error: {str(e)}", "warning")
@@ -339,6 +318,7 @@ FINAL OUTPUT — respond ONLY with valid JSON when investigation is complete:
             "toolsUsed": list(tool_results.keys()),
             "toolCallCount": max(len(tool_results), 1),
             "agentWeight": weight,
+            "inferenceTier": "TIER_3_DETERMINISTIC",
             "summary": f"{self.name}: {verdict} verdict from {len(tool_results)} on-host tool checks."
         }
 
