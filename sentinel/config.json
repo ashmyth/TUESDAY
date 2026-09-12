@@ -3,6 +3,8 @@
   "ollamaUrl": "http://localhost:11434",
   "model": "qwen2.5:7b",
   "fallbackModel": "phi4-mini",
+  "geminiApiKey": "",
+  "geminiModel": "gemini-2.5-flash",
   "maxTokens": 900,
   "timeoutMs": 120000,
   "numCtx": 8192,

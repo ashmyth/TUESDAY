@@ -23,6 +23,7 @@ function setProvider(prov) {
 function getProvider() {
   if (dynamicProvider) return dynamicProvider;
   if (process.env.LLM_PROVIDER) return process.env.LLM_PROVIDER;
+  if (config.geminiApiKey || process.env.GEMINI_API_KEY) return 'gemini';
   if (process.env.VERCEL) return 'gemini';
   return 'ollama';
 }
@@ -30,9 +31,9 @@ function getProvider() {
 async function checkModel() {
   const provider = getProvider();
   if (provider === 'gemini') {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY || config.geminiApiKey;
     const baseUrl = 'https://generativelanguage.googleapis.com/v1beta/openai';
-    const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+    const model = process.env.GEMINI_MODEL || config.geminiModel || 'gemini-2.5-flash';
 
     const hasKey = !!apiKey;
     return { 
@@ -86,9 +87,9 @@ async function rawChat({ messages, tools, format, temperature }) {
   const provider = getProvider();
 
   if (provider === 'gemini') {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY || config.geminiApiKey;
     const baseUrl = 'https://generativelanguage.googleapis.com/v1beta/openai';
-    const targetModel = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+    const targetModel = process.env.GEMINI_MODEL || config.geminiModel || 'gemini-2.5-flash';
 
     if (!apiKey) throw new Error(`GEMINI_API_KEY is not set`);
     
