@@ -53,9 +53,15 @@ const server = http.createServer(async (req, res) => {
         if (drillType === 'privacy') {
           const result = await require('./drills/privacy_harvester_drill').run();
           return sendJSON(res, 200, { ok: true, drill: 'privacy_harvester', result });
+        } else if (drillType === 'privacy_clean') {
+          const result = require('./drills/privacy_harvester_drill').cleanSandbox();
+          return sendJSON(res, 200, { ok: true, drill: 'privacy_clean', result });
         } else if (drillType === 'ransomware') {
           const result = await require('./drills/ransomware_canary_drill').run();
           return sendJSON(res, 200, { ok: true, drill: 'ransomware_canary', result });
+        } else if (drillType === 'ransomware_clean') {
+          const result = require('./drills/ransomware_canary_drill').cleanCanary();
+          return sendJSON(res, 200, { ok: true, drill: 'ransomware_clean', result });
         } else if (drillType === 'registry_plant') {
           const result = await require('./drills/registry_persistence_drill').plantCanary();
           return sendJSON(res, 200, { ok: true, drill: 'registry_plant', result });

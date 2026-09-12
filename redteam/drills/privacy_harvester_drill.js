@@ -59,8 +59,31 @@ async function run() {
   }
 }
 
-if (require.main === module) {
-  run();
+function cleanSandbox() {
+  console.log('[Privacy Harvester Drill] Cleaning up staged mock secrets in sandbox...');
+  if (!fs.existsSync(SANDBOX)) return { ok: true, count: 0, message: 'Sandbox directory clean' };
+
+  let count = 0;
+  const files = ['.env', 'session_cookies.sqlite'];
+  for (const f of files) {
+    const p = path.join(SANDBOX, f);
+    if (fs.existsSync(p)) {
+      try {
+        fs.unlinkSync(p);
+        count++;
+      } catch (e) {
+        console.warn(`[Privacy Harvester Drill] Failed to remove ${f}:`, e.message);
+      }
+    }
+  }
+  console.log(`[Privacy Harvester Drill] Removed ${count} mock credential files.`);
+  return { ok: true, count, message: `Removed ${count} mock credential files from sandbox` };
 }
 
-module.exports = { run };
+if (require.main === module) {
+  const mode = process.argv[2];
+  if (mode === 'clean') cleanSandbox();
+  else run();
+}
+
+module.exports = { run, cleanSandbox };

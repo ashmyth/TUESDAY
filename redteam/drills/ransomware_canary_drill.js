@@ -62,8 +62,28 @@ async function run() {
   }
 }
 
-if (require.main === module) {
-  run();
+function cleanCanary() {
+  console.log('[Ransomware Drill] Cleaning up canary sandbox files...');
+  if (!fs.existsSync(CANARY_DIR)) return { ok: true, count: 0, message: 'Canary sandbox directory clean' };
+
+  let count = 0;
+  const files = fs.readdirSync(CANARY_DIR);
+  for (const file of files) {
+    try {
+      fs.unlinkSync(path.join(CANARY_DIR, file));
+      count++;
+    } catch (e) {
+      console.warn(`[Ransomware Drill] Failed to remove canary file ${file}:`, e.message);
+    }
+  }
+  console.log(`[Ransomware Drill] Cleaned ${count} canary artifact files.`);
+  return { ok: true, count, message: `Successfully removed ${count} simulated canary files` };
 }
 
-module.exports = { run };
+if (require.main === module) {
+  const mode = process.argv[2];
+  if (mode === 'clean') cleanCanary();
+  else run();
+}
+
+module.exports = { run, cleanCanary };

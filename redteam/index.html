@@ -53,9 +53,12 @@
       <h3 style="font-size: 1.05rem; color: var(--accent);"><i class="fa-solid fa-bolt"></i> Live Host Drills (Execute on Real OS & Observe Sentinel Containment)</h3>
       <span style="font-size: 0.8rem; color: var(--muted);">Track 4: Cybersecurity & Privacy Tested Live</span>
     </div>
-    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
       <button class="btn-launch" style="background: #4f46e5;" onclick="triggerLiveDrill('privacy', 'Privacy Harvester (.env secrets reading + C2 beacon)')">
         <i class="fa-solid fa-user-secret"></i> 1. Run Live Privacy Harvester
+      </button>
+      <button class="btn-launch" style="background: #374151;" onclick="triggerLiveDrill('privacy_clean', 'Clean Mock Secrets in Sandbox')">
+        <i class="fa-solid fa-broom"></i> Clean Privacy Sandbox
       </button>
       <button class="btn-launch" style="background: #059669;" onclick="triggerLiveDrill('registry_plant', 'Plant Canary Autostart Key (HKCU Run)')">
         <i class="fa-solid fa-key"></i> 2. Plant Canary Registry Key
@@ -66,6 +69,12 @@
       <button class="btn-launch" style="background: #dc2626;" onclick="triggerLiveDrill('ransomware', 'LockBit File Rename & Canary Encryption')">
         <i class="fa-solid fa-file-shield"></i> 3. Run Live Ransomware Staging
       </button>
+      <button class="btn-launch" style="background: #374151;" onclick="triggerLiveDrill('ransomware_clean', 'Clean Ransomware Canary Files')">
+        <i class="fa-solid fa-eraser"></i> Clean Ransomware Canaries
+      </button>
+      <a href="http://localhost:8090" target="_blank" class="btn-launch" style="background: #0284c7; text-decoration: none;">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i> View Sentinel SOC Console (Port 8090)
+      </a>
     </div>
   </div>
 
