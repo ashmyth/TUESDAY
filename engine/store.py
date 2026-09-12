@@ -71,4 +71,50 @@ class Store:
             self.memory["auditLog"] = self.memory["auditLog"][:100]
         self.save()
 
+    def recall_similar(self, alert: Dict[str, Any], top_k: int = 3) -> List[Dict[str, Any]]:
+        """Keyword-based episodic memory retrieval to inject into agent context."""
+        title = (alert.get("title") or "").lower()
+        ioc = (alert.get("ioc") or "").lower()
+        process = (alert.get("process") or "").lower()
+        query_terms = set(title.split() + ioc.split(".") + process.split())
+
+        scored = []
+        for ep in self.memory["episodicMemory"]:
+            ep_text = " ".join([
+                ep.get("title", ""),
+                ep.get("ioc", ""),
+                ep.get("process", ""),
+                ep.get("status", ""),
+                " ".join(ep.get("ttpsDetected", []))
+            ]).lower()
+            score = sum(1 for term in query_terms if len(term) > 3 and term in ep_text)
+            if score > 0:
+                scored.append((score, ep))
+
+        scored.sort(key=lambda x: x[0], reverse=True)
+        return [ep for _, ep in scored[:top_k]]
+
+    def commit_episode(self, alert: Dict[str, Any], result: Dict[str, Any]):
+        """Save a completed investigation as an episodic memory record."""
+        import time
+        ep = {
+            "id": alert.get("id", f"ep-{int(time.time())}"),
+            "title": alert.get("title", "Unknown"),
+            "host": alert.get("host", ""),
+            "ioc": alert.get("ioc", ""),
+            "process": alert.get("process", ""),
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "status": result.get("status", "UNKNOWN"),
+            "riskScore": result.get("riskScore", 0),
+            "consensusPct": result.get("consensusPct", 0),
+            "ttpsDetected": result.get("ttpsDetected", []),
+            "critic": result.get("critic", {}).get("criticVerdict", ""),
+            "latencySec": result.get("latencySec", 0)
+        }
+        self.memory["episodicMemory"].insert(0, ep)
+        if len(self.memory["episodicMemory"]) > 50:
+            self.memory["episodicMemory"] = self.memory["episodicMemory"][:50]
+        self.memory["stats"]["incidents"] += 1
+        self.save()
+
 store = Store()
